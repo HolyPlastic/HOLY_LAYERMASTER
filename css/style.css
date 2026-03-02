@@ -1,149 +1,760 @@
-/* === BASE === */
-body { background-color: #232323; color: #ccc; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 11px; padding: 4px; margin: 0; overflow-x: hidden; user-select: none; }
-.comp-label { font-size: 9px; color: #888; padding: 2px 2px 5px; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@keyframes comp-flash { 0% { color: #ddd; } 100% { color: #888; } }
-.comp-label.flash { animation: comp-flash 0.5s ease-out; }
-.section-title { font-weight: 600; margin: 6px 0 2px 2px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; color: #888; }
-.row { display: flex; align-items: center; margin-bottom: 2px; gap: 2px; }
+/* ────────────────────────────────────────────── */
+/* #region 🎨🎨🎨 COLOR VARIABLES
+─────────────────────────────────────────────────── */
+:root {
+  /* Monochrome */
+  --hp-void: #000000;
+  --hp-surface: #0A0A0A;
+  --hp-border: #1A1A1A;
+  --hp-border-active: #2E2E2E;
 
-/* === INPUTS === */
-input { flex-grow: 1; background-color: #1e1e1e; color: #fff; border: 1px solid #3a3a3a; padding: 4px; border-radius: 2px; outline: none; min-width: 40px; font-size: 11px; }
-input:focus { border-color: #0078d7; }
+  /* Signal Colors — Primary (Select / Recall) */
+  --hp-signal-MAIN: #FF0073;
+  --hp-signal-MAIN-dark: #640a23;
+  --hp-signal-MAIN-boost: #fdadb4;
 
-/* === BUTTONS (base) === */
-button { background-color: #383838; color: #eee; border: 1px solid #4a4a4a; padding: 4px; cursor: pointer; border-radius: 2px; width: 36px; flex-shrink: 0; font-size: 11px; transition: background-color 0.1s; }
-button:hover { background-color: #555; }
-button:active { background-color: #222; border-color: #0078d7; }
+  /* Signal Colors — Secondary 1 (ISO / State toggles) */
+  --hp-signal-secondary-1: #d3d6d5;
+  --hp-signal-secondary-1-dark: #252525;
+  --hp-signal-secondary-1-boost: #ffffff;
 
-/* === ICON BUTTONS (sel/cap in bank rows, states, search) === */
-.icon-btn { width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-.icon-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
+  /* Signal Colors — Secondary 2 (Capture / Save) */
+  --hp-signal-secondary-2: #FFB800;
+  --hp-signal-secondary-2-dark: #4a3200;
+  --hp-signal-secondary-2-boost: #ffd980;
 
-/* Default state for bank/state buttons is an amber outline */
-#kfBanksContainer .icon-btn,
-#layBanksContainer .icon-btn,
-#stateRow .icon-btn {
-    background-color: transparent;
-    border-color: #d47d00;
-    color: #d47d00;
+  /* Text & States */
+  --hp-signal-white: #F0F0F0;
+  --hp-signal-mid: #888888;
+  --hp-signal-dim: #444444;
+  --hp-danger: #FF2D2D;
+
+  /* Effects */
+  --hp-glow-MAIN: rgba(255, 0, 115, 0.15);
+  --hp-glow-teal: rgba(0, 255, 195, 0.12);
+  --hp-glow-amber: rgba(255, 184, 0, 0.15);
 }
 
-.icon-btn.cap-active { background-color: #b36800; border-color: #d47d00; color: #eee; }
-.icon-btn.cap-active:hover { background-color: #cc7800; }
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 📐📐📐 LAYOUT TOKENS
+─────────────────────────────────────────────────── */
+:root {
+  --hp-stroke-hair: 0.75px;
+  --hp-stroke-thin: 1px;
+  --hp-radius: 0px;
+  --hp-grid-layout: 4px;
+  --hp-gap-segment: 2px;
+  --hp-scanline-opacity: 0.01;
+  --hp-scanline-repeat: 2px;
+  --hp-flicker-duration: 50ms;
+}
 
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🌍🌍🌍 BASE ELEMENTS
+─────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
 
-/* === CLEAR BUTTON (x) === */
-.clr-btn { width: 20px; font-size: 13px; color: #555; padding: 4px 0; border-color: transparent; background: transparent; }
-.clr-btn:hover { color: #e06c75; background-color: transparent; border-color: transparent; }
+body {
+  background: transparent;
+  color: var(--hp-signal-white);
+  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  font-size: 10px;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+  user-select: none;
+}
 
-/* === BANK CONTROLS (+/-) === */
-.bank-controls { display: flex; gap: 2px; margin: 2px 0 4px; }
-.ctrl-btn { width: 16px; height: 16px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-.ctrl-btn svg { width: 9px; height: 9px; display: block; flex-shrink: 0; }
-.add-btn { color: #aaa; }
-.rem-btn { color: #888; }
+.hp-frame {
+  position: relative;
+  z-index: 1;
+  padding: 4px;
+}
 
-/* === ISOLATION BAR === */
-.isolation-bar { display: flex; gap: 2px; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #333; }
-.iso-btn { flex: 1; width: auto; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-.iso-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region ⚡⚡⚡ ANIMATIONS & EFFECTS
+─────────────────────────────────────────────────── */
+@keyframes sync-flicker {
+  0%, 100% { opacity: 1; }
+  25%       { opacity: 0.8; }
+  50%       { opacity: 1; }
+  75%       { opacity: 0.9; }
+}
 
-/* === COLOR PICKER POPUP === */
+@keyframes comp-flash {
+  0%   { color: var(--hp-signal-white); }
+  100% { color: var(--hp-signal-secondary-1); }
+}
+
+.comp-label.flash {
+  animation: comp-flash 0.4s steps(4, end);
+}
+
+button:active {
+  animation: sync-flicker var(--hp-flicker-duration) steps(4, end);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🌐🌐🌐 BACKGROUND LAYERS
+─────────────────────────────────────────────────── */
+.crt-scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent var(--hp-scanline-repeat),
+    rgba(255, 255, 255, var(--hp-scanline-opacity)) var(--hp-scanline-repeat),
+    rgba(255, 255, 255, var(--hp-scanline-opacity)) calc(var(--hp-scanline-repeat) * 2)
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+#theme-bg-element {
+  position: fixed;
+  bottom: -20%;
+  right: -15%;
+  width: 95%;
+  height: auto;
+  opacity: 0.02;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hp-grid-element {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  height: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 💎💎💎 COMP LABEL
+─────────────────────────────────────────────────── */
+.comp-label {
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px 4px 7px;
+  border-bottom: 1px solid var(--hp-border);
+  margin-bottom: 2px;
+  color: var(--hp-signal-secondary-1);
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.comp-label::before {
+  content: "COMP:// ";
+  color: var(--hp-signal-dim);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🔲🔲🔲 ISOLATION BAR
+─────────────────────────────────────────────────── */
+.isolation-bar {
+  display: flex;
+  gap: 2px;
+  margin: 4px 0 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hp-border);
+}
+
+.iso-btn {
+  flex: 1;
+  height: 38px;
+  width: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background-color: var(--hp-signal-secondary-1-dark);
+  border: 1px solid var(--hp-signal-secondary-1);
+  color: var(--hp-signal-secondary-1);
+  border-radius: var(--hp-radius);
+  cursor: pointer;
+  transition: all var(--hp-flicker-duration) steps(4, end);
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.iso-btn svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.iso-label {
+  font-size: 6.5px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.iso-btn:hover {
+  background-color: var(--hp-signal-secondary-1);
+  border-color: var(--hp-signal-secondary-1-boost);
+  color: var(--hp-signal-secondary-1-dark);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 📌📌📌 SECTION HEADERS
+─────────────────────────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 10px 0 3px;
+  padding-left: 6px;
+  border-left: 2px solid var(--hp-signal-MAIN);
+}
+
+.section-star {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  color: var(--hp-signal-MAIN);
+  opacity: 0.8;
+}
+
+.section-title {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--hp-signal-mid);
+  text-transform: uppercase;
+  flex: 1;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🔘🔘🔘 BANK ROWS
+─────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+  gap: 2px;
+}
+
+/* ALL inputs */
+input {
+  flex-grow: 1;
+  background-color: var(--hp-surface);
+  color: var(--hp-signal-white);
+  border: 1px solid var(--hp-border);
+  border-radius: var(--hp-radius);
+  padding: 4px 6px;
+  outline: none;
+  min-width: 40px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  height: 28px;
+}
+
+input::placeholder {
+  color: var(--hp-signal-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-style: normal;
+}
+
+input:focus {
+  border-color: var(--hp-signal-MAIN);
+  box-shadow: inset 0 0 8px var(--hp-glow-MAIN);
+  background-color: var(--hp-surface);
+}
+
+/* Base button reset */
+button {
+  background-color: var(--hp-surface);
+  color: var(--hp-signal-mid);
+  border: 1px solid var(--hp-border-active);
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--hp-radius);
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  font-size: 8px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all var(--hp-flicker-duration) steps(4, end);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  background-color: var(--hp-border-active);
+  color: var(--hp-signal-white);
+}
+
+/* Icon button base */
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* SELECT buttons — pink / primary signal */
+.sel-btn,
+#searchBtn,
+#applyStateBtn {
+  background-color: var(--hp-signal-MAIN-dark);
+  border-color: var(--hp-signal-MAIN);
+  color: var(--hp-signal-MAIN);
+}
+
+.sel-btn:hover,
+#searchBtn:hover,
+#applyStateBtn:hover {
+  background-color: var(--hp-signal-MAIN);
+  border-color: var(--hp-signal-MAIN-boost);
+  color: var(--hp-signal-MAIN-dark);
+}
+
+/* CAPTURE buttons — amber */
+.cap-btn,
+#captureStateBtn {
+  background-color: var(--hp-signal-secondary-2-dark);
+  border-color: var(--hp-signal-secondary-2);
+  color: var(--hp-signal-secondary-2);
+}
+
+.cap-btn:hover,
+#captureStateBtn:hover {
+  background-color: var(--hp-signal-secondary-2);
+  border-color: var(--hp-signal-secondary-2-boost);
+  color: var(--hp-signal-secondary-2-dark);
+}
+
+/* cap-active — bank has saved data (amber glow indicator) */
+.icon-btn.cap-active {
+  background-color: var(--hp-signal-secondary-2-dark);
+  border-color: var(--hp-signal-secondary-2);
+  color: var(--hp-signal-secondary-2);
+  box-shadow: 0 0 6px var(--hp-glow-amber);
+}
+
+.icon-btn.cap-active:hover {
+  background-color: var(--hp-signal-secondary-2);
+  border-color: var(--hp-signal-secondary-2-boost);
+  color: var(--hp-signal-secondary-2-dark);
+}
+
+/* CLEAR / DELETE button */
+.clr-btn {
+  width: 20px;
+  height: 20px;
+  color: var(--hp-signal-dim);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.clr-btn svg {
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+
+.clr-btn:hover {
+  color: var(--hp-danger);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 💡💡💡 BANK CONTROLS (+/-)
+─────────────────────────────────────────────────── */
+.bank-controls {
+  display: flex;
+  gap: 2px;
+  margin: 2px 0 6px;
+}
+
+.ctrl-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--hp-surface);
+  border: 1px solid var(--hp-border-active);
+  color: var(--hp-signal-dim);
+}
+
+.ctrl-btn svg {
+  width: 9px;
+  height: 9px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.add-btn:hover {
+  border-color: var(--hp-signal-MAIN);
+  color: var(--hp-signal-MAIN);
+  background-color: var(--hp-signal-MAIN-dark);
+}
+
+.rem-btn:hover {
+  border-color: var(--hp-danger);
+  color: var(--hp-danger);
+  background-color: rgba(255, 45, 45, 0.1);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 📷📷📷 LAYER STATES COMBO
+─────────────────────────────────────────────────── */
+.state-combo-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.state-combo-input {
+  flex: 1;
+  min-width: 0;
+  border-right: none;
+}
+
+.state-combo-arrow {
+  width: 20px;
+  height: 28px;
+  padding: 0;
+  border-left: 1px solid var(--hp-border);
+  background-color: var(--hp-surface);
+  color: var(--hp-signal-mid);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--hp-border);
+  border-right: 1px solid var(--hp-border);
+  border-bottom: 1px solid var(--hp-border);
+  cursor: pointer;
+  transition: all var(--hp-flicker-duration) steps(4, end);
+}
+
+.state-combo-arrow svg {
+  width: 9px;
+  height: 7px;
+  display: block;
+}
+
+.state-combo-arrow:hover {
+  background-color: var(--hp-border-active);
+  color: var(--hp-signal-white);
+  border-color: var(--hp-border-active);
+}
+
+.state-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--hp-surface);
+  border: 1px solid var(--hp-border-active);
+  border-top: none;
+  z-index: 100;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 8.5px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  color: var(--hp-signal-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--hp-border);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background-color: var(--hp-border-active);
+  color: var(--hp-signal-white);
+}
+
+.dropdown-item.active {
+  color: var(--hp-signal-secondary-1);
+  background-color: var(--hp-signal-secondary-1-dark);
+}
+
+.dropdown-item.create-new {
+  color: var(--hp-signal-dim);
+  border-top: 1px solid var(--hp-border-active);
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.dropdown-item.create-new:hover {
+  color: var(--hp-signal-MAIN);
+  background-color: var(--hp-signal-MAIN-dark);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🔍🔍🔍 SEARCH & SYSTEM ROW
+─────────────────────────────────────────────────── */
+.hp-sys-row {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--hp-border);
+}
+
+.sys-btn {
+  width: 100%;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 7.5px;
+  letter-spacing: 2px;
+  color: var(--hp-signal-dim);
+  border-color: var(--hp-border);
+  background: transparent;
+  justify-content: center;
+  gap: 5px;
+}
+
+.sys-btn svg {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+
+.sys-btn:hover {
+  color: var(--hp-signal-mid);
+  border-color: var(--hp-border-active);
+  background-color: var(--hp-surface);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🎛️🎛️🎛️ COLOR PICKER POPUP
+─────────────────────────────────────────────────── */
 .color-picker-popup {
-    position: fixed;
-    z-index: 1000;
-    background: #2a2a2a;
-    border: 1px solid #505050;
-    border-radius: 3px;
-    padding: 6px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.6);
-    min-width: 154px;
+  position: fixed;
+  z-index: 1001;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border-active);
+  border-radius: var(--hp-radius);
+  padding: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--hp-border);
+  min-width: 154px;
 }
+
 .cp-swatch-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 16px);
-    gap: 2px;
-    margin-bottom: 6px;
+  display: grid;
+  grid-template-columns: repeat(8, 16px);
+  gap: 2px;
+  margin-bottom: 6px;
 }
+
 .cp-swatch {
-    width: 16px;
-    height: 16px;
-    border-radius: 2px;
-    cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.1);
-    position: relative;
-    transition: transform 0.1s;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--hp-radius);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  transition: transform var(--hp-flicker-duration) steps(2, end);
 }
-.cp-swatch:hover { transform: scale(1.25); border-color: rgba(255,255,255,0.5); z-index: 1; }
-.cp-swatch-empty { background: repeating-linear-gradient(45deg,#333 0,#333 3px,#2a2a2a 3px,#2a2a2a 6px); cursor: default; }
-.cp-hex-row { display: flex; align-items: center; gap: 2px; margin-bottom: 4px; }
-.cp-hash { color: #777; font-size: 11px; flex-shrink: 0; }
-#cpHexInput { flex: 1; min-width: 0; font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-.cp-btn { width: 24px; height: 24px; font-size: 10px; padding: 0; flex-shrink: 0; }
-.cp-reset-btn { width: 100%; font-size: 10px; color: #777; background: transparent; border-color: #3a3a3a; padding: 3px 0; }
-.cp-reset-btn:hover { color: #ccc; background: #333; }
 
-/* === LAYER STATES COMBO === */
-.state-combo-wrap { flex: 1; position: relative; display: flex; min-width: 0; }
-.state-combo-input { flex: 1; min-width: 0; border-radius: 2px 0 0 2px; }
-.state-combo-arrow { width: 18px; padding: 0; border-left: none; border-radius: 0 2px 2px 0; font-size: 9px; align-self: stretch; flex-shrink: 0; line-height: 1; }
-.state-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background-color: #2a2a2a; border: 1px solid #4a4a4a; border-top: none; border-radius: 0 0 2px 2px; z-index: 100; max-height: 120px; overflow-y: auto; }
-.dropdown-item { padding: 4px 6px; cursor: pointer; font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dropdown-item:hover { background-color: #3a3a3a; }
-.dropdown-item.active { color: #fff; background-color: #2e2e2e; }
-.dropdown-item.create-new { color: #777; border-top: 1px solid #3a3a3a; font-style: italic; }
-.dropdown-item.create-new:hover { background-color: #333; color: #aaa; }
+.cp-swatch:hover {
+  transform: scale(1.3);
+  border-color: var(--hp-signal-white);
+  z-index: 1;
+}
 
-/* ============================================================
-   NARROW / SIDEPANEL LAYOUT
-   Toggled by JS ResizeObserver adding .narrow to body
-   ============================================================ */
+.cp-swatch-empty {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--hp-border) 0,
+    var(--hp-border) 3px,
+    var(--hp-surface) 3px,
+    var(--hp-surface) 6px
+  );
+  cursor: default;
+}
 
+.cp-hex-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.cp-hash {
+  color: var(--hp-signal-dim);
+  font-size: 10px;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+#cpHexInput {
+  flex: 1;
+  min-width: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  height: 24px;
+  padding: 2px 4px;
+}
+
+.cp-btn {
+  width: 28px;
+  height: 24px;
+  font-size: 7.5px;
+  padding: 0;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+  background-color: var(--hp-signal-MAIN-dark);
+  border-color: var(--hp-signal-MAIN);
+  color: var(--hp-signal-MAIN);
+}
+
+.cp-btn:hover {
+  background-color: var(--hp-signal-MAIN);
+  color: var(--hp-signal-MAIN-dark);
+  border-color: var(--hp-signal-MAIN-boost);
+}
+
+.cp-reset-btn {
+  width: 100%;
+  height: 22px;
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  color: var(--hp-signal-dim);
+  background: transparent;
+  border-color: var(--hp-border-active);
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.cp-reset-btn:hover {
+  color: var(--hp-signal-mid);
+  background: var(--hp-border);
+  border-color: var(--hp-border-active);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 📱📱📱 NARROW / RESPONSIVE
+─────────────────────────────────────────────────── */
 .narrow .isolation-bar {
-    flex-direction: column;
-    gap: 4px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .narrow .iso-btn {
-    height: 44px;
-    min-width: 10px;
+  height: 44px;
+  min-width: 10px;
+  flex-direction: row;
+  gap: 6px;
 }
 
-.narrow .isolation-bar ~ .section-title,
-.narrow .section-title { letter-spacing: 0.1em; }
+.narrow .section-title {
+  letter-spacing: 0.1em;
+}
 
 .narrow #kfBanksContainer .row,
 .narrow #layBanksContainer .row {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 /* Hide bank name inputs in narrow mode */
 .narrow #kfBanksContainer .row input,
 .narrow #layBanksContainer .row input {
-    display: none;
+  display: none;
 }
 
 .narrow #stateRow {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 /* Stack state dropdown above its buttons */
 .narrow #stateRow .state-combo-wrap {
-    order: -1;
-    flex: 0 0 100%;
-    margin-bottom: 2px;
+  order: -1;
+  flex: 0 0 100%;
+  margin-bottom: 2px;
 }
 
 .narrow #stateRow #applyStateBtn {
-    margin-right: 0;
+  margin-right: 0;
 }
 
 /* Stack search input above its button */
 .narrow #searchRow {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
+
 .narrow #searchRow #searchInput {
-    order: -1;
-    flex: 0 0 100%;
-    margin-bottom: 2px;
+  order: -1;
+  flex: 0 0 100%;
+  margin-bottom: 2px;
 }
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */

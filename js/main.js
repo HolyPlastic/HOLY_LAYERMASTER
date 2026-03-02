@@ -4,8 +4,12 @@ const path = require('path');
 
 // --- SVG icon strings ---
 const SVG = {
-    select:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>`,
-    capture: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></svg>`
+    // icons-cursor-sting — select / recall
+    select:  `<svg viewBox="0 0 9.98 9.98" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9.17,5.27l-2.69.92c-.13.05-.24.15-.28.28l-.92,2.69c-.13.38-.66.41-.83.05L.55,1.15c-.19-.39.22-.79.6-.6l8.07,3.89c.36.18.33.7-.05.83Z"/></svg>`,
+    // icons-lens-split — capture / focus
+    capture: `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="3.59" y1="3.59" x2=".5" y2=".5"/><line x1="10.5" y1="10.5" x2="7.41" y2="7.41"/><path d="M7.41,3.59c-1.05-1.05-2.76-1.05-3.82,0-1.05,1.05-1.05,2.76,0,3.82,1.05,1.05,2.76,1.05,3.82,0,1.05-1.05,1.05-2.76,0-3.82Z"/></svg>`,
+    // icons-cross-diagonal — delete / clear
+    close:   `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="10.5" y1=".5" x2=".5" y2="10.5"/><line x1=".5" y1=".5" x2="10.5" y2="10.5"/></svg>`
 };
 
 // --- Storage Setup (data lives adjacent to the .aep in _HLM_Data/) ---
@@ -205,7 +209,7 @@ function renderBankRow(type, bank) {
 
     const selBtn = document.createElement('button');
     selBtn.id        = `sel_${bank.id}`;
-    selBtn.className = 'icon-btn';
+    selBtn.className = 'icon-btn sel-btn';
     selBtn.innerHTML = SVG.select;
     selBtn.title     = isKf ? 'Restore saved keyframe positions' : 'Recall saved layer selection';
     selBtn.addEventListener('click', () => selectData(type, bank.id, `name_${bank.id}`));
@@ -224,7 +228,7 @@ function renderBankRow(type, bank) {
         : 'Capture current selection into this layer memory bank';
     const capBtn = document.createElement('button');
     capBtn.id              = `cap_${bank.id}`;
-    capBtn.className       = 'icon-btn';
+    capBtn.className       = 'icon-btn cap-btn';
     capBtn.innerHTML       = SVG.capture;
     capBtn.title           = capBaseTitle;
     capBtn.dataset.baseTitle = capBaseTitle;
@@ -233,7 +237,7 @@ function renderBankRow(type, bank) {
 
     const clrBtn = document.createElement('button');
     clrBtn.className = 'clr-btn';
-    clrBtn.textContent = '×';
+    clrBtn.innerHTML = SVG.close;
     clrBtn.title = 'Clear this bank for the current comp';
     clrBtn.addEventListener('click', () => {
         if (!currentProjPath || !currentCompId) return;
@@ -281,7 +285,7 @@ function removeBank(type) {
 function updateCompLabel(name) {
     const el = document.getElementById('activeCompLabel');
     if (!el) return;
-    el.textContent = name ? `● ${name}` : 'No Active Comp';
+    el.textContent = name ? name.toUpperCase() : 'NO ACTIVE COMP';
     if (name) {
         el.classList.remove('flash');
         void el.offsetWidth; // force reflow so animation restarts cleanly
