@@ -18,8 +18,19 @@ button:active { background-color: #222; border-color: #0078d7; }
 /* === ICON BUTTONS (sel/cap in bank rows, states, search) === */
 .icon-btn { width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 .icon-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
-.icon-btn.cap-active { background-color: #b36800; border-color: #d47d00; }
+
+/* Default state for bank/state buttons is an amber outline */
+#kfBanksContainer .icon-btn,
+#layBanksContainer .icon-btn,
+#stateRow .icon-btn {
+    background-color: transparent;
+    border-color: #d47d00;
+    color: #d47d00;
+}
+
+.icon-btn.cap-active { background-color: #b36800; border-color: #d47d00; color: #eee; }
 .icon-btn.cap-active:hover { background-color: #cc7800; }
+
 
 /* === CLEAR BUTTON (x) === */
 .clr-btn { width: 20px; font-size: 13px; color: #555; padding: 4px 0; border-color: transparent; background: transparent; }
@@ -27,8 +38,8 @@ button:active { background-color: #222; border-color: #0078d7; }
 
 /* === BANK CONTROLS (+/-) === */
 .bank-controls { display: flex; gap: 2px; margin: 2px 0 4px; }
-.ctrl-btn { width: 20px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-.ctrl-btn svg { width: 10px; height: 10px; display: block; flex-shrink: 0; }
+.ctrl-btn { width: 16px; height: 16px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.ctrl-btn svg { width: 9px; height: 9px; display: block; flex-shrink: 0; }
 .add-btn { color: #aaa; }
 .rem-btn { color: #888; }
 
@@ -88,6 +99,16 @@ button:active { background-color: #222; border-color: #0078d7; }
    Toggled by JS ResizeObserver adding .narrow to body
    ============================================================ */
 
+.narrow .isolation-bar {
+    flex-direction: column;
+    gap: 4px;
+}
+
+.narrow .iso-btn {
+    height: 44px;
+    min-width: 10px;
+}
+
 .narrow .isolation-bar ~ .section-title,
 .narrow .section-title { letter-spacing: 0.1em; }
 
@@ -96,21 +117,17 @@ button:active { background-color: #222; border-color: #0078d7; }
     flex-wrap: wrap;
 }
 
+/* Hide bank name inputs in narrow mode */
 .narrow #kfBanksContainer .row input,
 .narrow #layBanksContainer .row input {
-    order: -1;
-    flex: 0 0 100%;
-}
-
-.narrow #kfBanksContainer .row .icon-btn:first-child,
-.narrow #layBanksContainer .row .icon-btn:first-child {
-    margin-right: auto;
+    display: none;
 }
 
 .narrow #stateRow {
     flex-wrap: wrap;
 }
 
+/* Stack state dropdown above its buttons */
 .narrow #stateRow .state-combo-wrap {
     order: -1;
     flex: 0 0 100%;
@@ -118,5 +135,15 @@ button:active { background-color: #222; border-color: #0078d7; }
 }
 
 .narrow #stateRow #applyStateBtn {
-    margin-right: auto;
+    margin-right: 0;
+}
+
+/* Stack search input above its button */
+.narrow #searchRow {
+    flex-wrap: wrap;
+}
+.narrow #searchRow #searchInput {
+    order: -1;
+    flex: 0 0 100%;
+    margin-bottom: 2px;
 }

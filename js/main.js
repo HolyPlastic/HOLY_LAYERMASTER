@@ -153,22 +153,27 @@ function applyPickerColor(hex) {
     closeColorPicker();
 }
 
-function closeColorPicker() {
-    const picker = document.getElementById('hlmColorPicker');
-    if (picker) picker.style.display = 'none';
-    _pickerBankId = null;
-}
-
-// Applies (or removes) a custom cap-active color on a button via inline style.
-// Falls back to the default amber (controlled by CSS .cap-active) when no custom color is set.
-function applyCapButtonColor(btn, bankId, isActive) {
-    if (isActive && currentConfig.bankColors[bankId]) {
-        const hex = currentConfig.bankColors[bankId];
-        btn.style.backgroundColor = hex;
-        btn.style.borderColor      = hex;
+// Applies custom colors to buttons, handling both empty (outline) and stored (filled) states.
+// If no custom color is set, it clears inline styles to let CSS defaults take over.
+function applyButtonColor(btn, id, hasData) {
+    const customColor = currentConfig.bankColors[id];
+    if (customColor) {
+        if (hasData) {
+            // Stored state with custom color: FILLED
+            btn.style.backgroundColor = customColor;
+            btn.style.borderColor = customColor;
+            btn.style.color = ''; // Reset to let CSS handle it
+        } else {
+            // Empty state with custom color: OUTLINE
+            btn.style.backgroundColor = 'transparent';
+            btn.style.borderColor = customColor;
+            btn.style.color = customColor;
+        }
     } else {
+        // No custom color, reset styles to let CSS classes handle it
         btn.style.backgroundColor = '';
         btn.style.borderColor      = '';
+        btn.style.color = '';
     }
 }
 
@@ -299,14 +304,25 @@ function getBankCount(projPath, compId, bankId) {
 }
 function refreshBankIndicators() {
     [...currentConfig.kfBanks, ...currentConfig.layBanks].forEach(({ id }) => {
-        const btn = document.getElementById(`cap_${id}`);
-        if (!btn) return;
+        const capBtn = document.getElementById(`cap_${id}`);
+        const selBtn = document.getElementById(`sel_${id}`);
+        if (!capBtn || !selBtn) return;
+
         const count = (currentProjPath && currentCompId)
             ? getBankCount(currentProjPath, currentCompId, id) : 0;
-        btn.classList.toggle('cap-active', count > 0);
-        applyCapButtonColor(btn, id, count > 0);
-        const base = btn.dataset.baseTitle || '';
-        btn.title = count > 0 ? `${base} (${count} saved)` : base;
+        const hasData = count > 0;
+
+        // Toggle active class for both buttons
+        capBtn.classList.toggle('cap-active', hasData);
+        selBtn.classList.toggle('cap-active', hasData);
+
+        // Apply custom colors (or reset to CSS defaults) for both
+        applyButtonColor(capBtn, id, hasData);
+        applyButtonColor(selBtn, id, hasData);
+
+        // Update tooltip on capture button only
+        const base = capBtn.dataset.baseTitle || '';
+        capBtn.title = hasData ? `${base} (${count} saved)` : base;
     });
 }
 
@@ -377,7 +393,7 @@ function refreshStateIndicator() {
         fs.existsSync(getSavePath(currentProjPath, currentCompId, activeStateId))
     );
     btn.classList.toggle('cap-active', hasData);
-    if (activeStateId) applyCapButtonColor(btn, activeStateId, hasData);
+    if (activeStateId) applyButtonColor(btn, activeStateId, hasData);
 }
 
 function captureStateData() {
@@ -556,7 +572,7 @@ startPolling();
 // --- Narrow sidepanel layout: toggle .narrow on body via ResizeObserver ---
 (function () {
     if (typeof ResizeObserver === 'undefined') return;
-    const BREAKPOINT = 200;
+    const BREAKPOINT = 150;
     new ResizeObserver(entries => {
         document.body.classList.toggle('narrow', entries[0].contentRect.width < BREAKPOINT);
     }).observe(document.body);
