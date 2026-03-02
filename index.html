@@ -6,26 +6,65 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div id="isolationBar" class="isolation-bar">
+        <button id="soloBtn" class="iso-btn" title="Toggle solo on selected layers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </button>
+        <button id="shyBtn" class="iso-btn" title="Shy focus: hide non-selected layers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
+        </button>
+        <button id="lockBtn" class="iso-btn" title="Lock selected layers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </button>
+    </div>
     <div id="activeCompLabel" class="comp-label">No Active Comp</div>
+
     <div class="section-title">Keyframe Memory</div>
     <div id="kfBanksContainer"></div>
     <div class="bank-controls">
-        <button id="addKfBank" class="ctrl-btn add-btn">+</button>
-        <button id="removeKfBank" class="ctrl-btn rem-btn">−</button>
+        <button id="addKfBank" class="ctrl-btn add-btn" title="Add new keyframe memory bank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button id="removeKfBank" class="ctrl-btn rem-btn" title="Remove this keyframe memory bank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
     </div>
+
     <div class="section-title">Layer Memory</div>
     <div id="layBanksContainer"></div>
     <div class="bank-controls">
-        <button id="addLayBank" class="ctrl-btn add-btn">+</button>
-        <button id="removeLayBank" class="ctrl-btn rem-btn">−</button>
+        <button id="addLayBank" class="ctrl-btn add-btn" title="Add new layer memory bank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button id="removeLayBank" class="ctrl-btn rem-btn" title="Remove this layer memory bank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
     </div>
+
+    <div class="section-title">Layer States</div>
+    <div class="row" id="stateRow">
+        <button id="applyStateBtn" class="icon-btn" title="Apply saved timeline switches to matching layers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </button>
+        <div class="state-combo-wrap">
+            <input type="text" id="stateNameInput" class="state-combo-input" placeholder="State Name" title="Active State (Click to Rename)">
+            <button id="stateDropdownBtn" class="state-combo-arrow" title="Switch active state">&#9660;</button>
+            <div id="stateDropdownList" class="state-dropdown-list" style="display:none"></div>
+        </div>
+        <button id="captureStateBtn" class="icon-btn" title="Capture current Eye, Shy, Solo, and Lock states into this snapshot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+        </button>
+    </div>
+
     <div class="section-title">Search</div>
     <div class="row">
-        <input type="text" placeholder="Search Layers..." id="searchInput">
-        <button id="searchBtn" style="width: 74px;">Select</button>
+        <button id="searchBtn" class="icon-btn" title="Quick select layers matched by search term">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </button>
+        <input type="text" placeholder="Search by name, effect, or comment" id="searchInput" title="Search by name, effect, or comment">
     </div>
     <div class="row" style="margin-top: 6px;">
-        <button id="reloadBtn" style="width: 100%; color: #666;">↺ Reload</button>
+        <button id="reloadBtn" style="width: 100%; color: #666;">&#8635; Reload</button>
     </div>
     <script src="js/CSInterface.js"></script>
     <script src="js/main.js"></script>

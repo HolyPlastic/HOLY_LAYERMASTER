@@ -1,20 +1,122 @@
+/* === BASE === */
 body { background-color: #232323; color: #ccc; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 11px; padding: 4px; margin: 0; overflow-x: hidden; user-select: none; }
 .comp-label { font-size: 9px; color: #888; padding: 2px 2px 5px; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes comp-flash { 0% { color: #ddd; } 100% { color: #888; } }
 .comp-label.flash { animation: comp-flash 0.5s ease-out; }
 .section-title { font-weight: 600; margin: 6px 0 2px 2px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; color: #888; }
 .row { display: flex; align-items: center; margin-bottom: 2px; gap: 2px; }
+
+/* === INPUTS === */
 input { flex-grow: 1; background-color: #1e1e1e; color: #fff; border: 1px solid #3a3a3a; padding: 4px; border-radius: 2px; outline: none; min-width: 40px; font-size: 11px; }
 input:focus { border-color: #0078d7; }
+
+/* === BUTTONS (base) === */
 button { background-color: #383838; color: #eee; border: 1px solid #4a4a4a; padding: 4px; cursor: pointer; border-radius: 2px; width: 36px; flex-shrink: 0; font-size: 11px; transition: background-color 0.1s; }
 button:hover { background-color: #555; }
 button:active { background-color: #222; border-color: #0078d7; }
-button.cap-active { background-color: #b36800; border-color: #d47d00; color: #fff; }
-button.cap-active:hover { background-color: #cc7800; }
-.cap-btn { width: auto; min-width: 36px; padding: 4px 5px; }
+
+/* === ICON BUTTONS (sel/cap in bank rows, states, search) === */
+.icon-btn { width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.icon-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
+.icon-btn.cap-active { background-color: #b36800; border-color: #d47d00; }
+.icon-btn.cap-active:hover { background-color: #cc7800; }
+
+/* === CLEAR BUTTON (x) === */
 .clr-btn { width: 20px; font-size: 13px; color: #555; padding: 4px 0; border-color: transparent; background: transparent; }
 .clr-btn:hover { color: #e06c75; background-color: transparent; border-color: transparent; }
+
+/* === BANK CONTROLS (+/-) === */
 .bank-controls { display: flex; gap: 2px; margin: 2px 0 4px; }
-.ctrl-btn { width: 26px; font-size: 14px; padding: 2px 0; line-height: 1; }
+.ctrl-btn { width: 20px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.ctrl-btn svg { width: 10px; height: 10px; display: block; flex-shrink: 0; }
 .add-btn { color: #aaa; }
 .rem-btn { color: #888; }
+
+/* === ISOLATION BAR === */
+.isolation-bar { display: flex; gap: 2px; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #333; }
+.iso-btn { flex: 1; width: auto; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.iso-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
+
+/* === COLOR PICKER POPUP === */
+.color-picker-popup {
+    position: fixed;
+    z-index: 1000;
+    background: #2a2a2a;
+    border: 1px solid #505050;
+    border-radius: 3px;
+    padding: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    min-width: 154px;
+}
+.cp-swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 16px);
+    gap: 2px;
+    margin-bottom: 6px;
+}
+.cp-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    transition: transform 0.1s;
+}
+.cp-swatch:hover { transform: scale(1.25); border-color: rgba(255,255,255,0.5); z-index: 1; }
+.cp-swatch-empty { background: repeating-linear-gradient(45deg,#333 0,#333 3px,#2a2a2a 3px,#2a2a2a 6px); cursor: default; }
+.cp-hex-row { display: flex; align-items: center; gap: 2px; margin-bottom: 4px; }
+.cp-hash { color: #777; font-size: 11px; flex-shrink: 0; }
+#cpHexInput { flex: 1; min-width: 0; font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.cp-btn { width: 24px; height: 24px; font-size: 10px; padding: 0; flex-shrink: 0; }
+.cp-reset-btn { width: 100%; font-size: 10px; color: #777; background: transparent; border-color: #3a3a3a; padding: 3px 0; }
+.cp-reset-btn:hover { color: #ccc; background: #333; }
+
+/* === LAYER STATES COMBO === */
+.state-combo-wrap { flex: 1; position: relative; display: flex; min-width: 0; }
+.state-combo-input { flex: 1; min-width: 0; border-radius: 2px 0 0 2px; }
+.state-combo-arrow { width: 18px; padding: 0; border-left: none; border-radius: 0 2px 2px 0; font-size: 9px; align-self: stretch; flex-shrink: 0; line-height: 1; }
+.state-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background-color: #2a2a2a; border: 1px solid #4a4a4a; border-top: none; border-radius: 0 0 2px 2px; z-index: 100; max-height: 120px; overflow-y: auto; }
+.dropdown-item { padding: 4px 6px; cursor: pointer; font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-item:hover { background-color: #3a3a3a; }
+.dropdown-item.active { color: #fff; background-color: #2e2e2e; }
+.dropdown-item.create-new { color: #777; border-top: 1px solid #3a3a3a; font-style: italic; }
+.dropdown-item.create-new:hover { background-color: #333; color: #aaa; }
+
+/* ============================================================
+   NARROW / SIDEPANEL LAYOUT
+   Toggled by JS ResizeObserver adding .narrow to body
+   ============================================================ */
+
+.narrow .isolation-bar ~ .section-title,
+.narrow .section-title { letter-spacing: 0.1em; }
+
+.narrow #kfBanksContainer .row,
+.narrow #layBanksContainer .row {
+    flex-wrap: wrap;
+}
+
+.narrow #kfBanksContainer .row input,
+.narrow #layBanksContainer .row input {
+    order: -1;
+    flex: 0 0 100%;
+}
+
+.narrow #kfBanksContainer .row .icon-btn:first-child,
+.narrow #layBanksContainer .row .icon-btn:first-child {
+    margin-right: auto;
+}
+
+.narrow #stateRow {
+    flex-wrap: wrap;
+}
+
+.narrow #stateRow .state-combo-wrap {
+    order: -1;
+    flex: 0 0 100%;
+    margin-bottom: 2px;
+}
+
+.narrow #stateRow #applyStateBtn {
+    margin-right: auto;
+}

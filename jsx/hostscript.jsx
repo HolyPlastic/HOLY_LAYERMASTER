@@ -271,3 +271,254 @@ function searchLayersB64(b64Term) {
     }
     app.endUndoGroup();
 }
+
+// =======================
+// LAYER STATES LOGIC
+// =======================
+
+// captureLayerStates: records enabled/shy/solo/locked for every layer in the comp,
+// plus the comp's master hideShyLayers flag. Tags each layer with a DNA comment
+// using the same [HLM:<stateId>:<instanceId>:<timestamp>] format as banks.
+function captureLayerStates(stateId, timestamp) {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return "ERROR: Please select a composition.";
+
+    app.beginUndoGroup("Capture Layer States");
+
+    var records = [];
+    for (var i = 1; i <= comp.numLayers; i++) {
+        var layer      = comp.layer(i);
+        var instanceId = generateUID();
+        var tag        = "[HLM:" + stateId + ":" + instanceId + ":" + timestamp + "]";
+        var cleaned    = cleanComment(layer.comment || "", stateId);
+        layer.comment  = cleaned ? cleaned + " " + tag : tag;
+        records.push({
+            id:         layer.id,
+            instanceId: instanceId,
+            enabled:    layer.enabled,
+            shy:        layer.shy,
+            solo:       layer.solo,
+            locked:     layer.locked
+        });
+    }
+
+    app.endUndoGroup();
+    return JSON.stringify({
+        compId:        comp.id,
+        stateId:       stateId,
+        hideShyLayers: comp.hideShyLayers,
+        layers:        records
+    });
+}
+
+// applyLayerStates: restores enabled/shy/solo/locked for layers that were part of
+// the saved state. Layers created after capture are left untouched. Missing layers
+// are skipped silently. Lookup is by layer.id first, DNA tag fallback second.
+function applyLayerStates(filePath, stateName) {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return "ERROR: Please select a composition.";
+
+    var f = new File(filePath);
+    if (!f.exists) return "ERROR: State file not found.";
+    f.open('r');
+    var dataStr = f.read();
+    f.close();
+
+    var data;
+    try { data = JSON.parse(dataStr); } catch(e) { return "ERROR: Corrupt state data."; }
+
+    app.beginUndoGroup("Apply Layer State: " + stateName);
+
+    // Build id -> record and instanceId -> record lookup maps
+    var idMap       = {};
+    var instanceMap = {};
+    var records     = data.layers || [];
+    for (var r = 0; r < records.length; r++) {
+        idMap[records[r].id] = records[r];
+        if (records[r].instanceId) instanceMap[records[r].instanceId] = records[r];
+    }
+
+    // Apply global comp flag
+    if (typeof data.hideShyLayers !== 'undefined') {
+        comp.hideShyLayers = data.hideShyLayers;
+    }
+
+    for (var i = 1; i <= comp.numLayers; i++) {
+        var layer = comp.layer(i);
+        var rec   = idMap[layer.id] || null;
+
+        // DNA fallback: scan comment for matching [HLM:<stateId>:<instanceId>:...] tag
+        if (!rec && data.stateId && layer.comment) {
+            var tagPrefix = "[HLM:" + data.stateId + ":";
+            var tagIdx    = layer.comment.indexOf(tagPrefix);
+            if (tagIdx !== -1) {
+                var rest     = layer.comment.substring(tagIdx + tagPrefix.length);
+                var colonIdx = rest.indexOf(":");
+                if (colonIdx !== -1) {
+                    var iid = rest.substring(0, colonIdx);
+                    if (instanceMap[iid]) rec = instanceMap[iid];
+                }
+            }
+        }
+
+        // Only touch layers that were present when the state was captured
+        if (rec) {
+            // Temporarily unlock so we can reliably set all properties
+            var wasLocked = layer.locked;
+            if (wasLocked) layer.locked = false;
+            layer.enabled = rec.enabled;
+            layer.shy     = rec.shy;
+            layer.solo    = rec.solo;
+            layer.locked  = (rec.locked !== undefined) ? rec.locked : wasLocked;
+        }
+    }
+
+    app.endUndoGroup();
+    return "SUCCESS";
+}
+
+// =======================
+// AE LABEL COLORS
+// =======================
+
+// Returns the 16 user-defined AE label colors + names as a JSON string.
+// Encoding must be CP1252 so AE's raw preference bytes decode correctly.
+function getAELabelData() {
+    $.appEncoding = 'CP1252';
+    var colorSection = "Label Preference Color Section 5";
+    var nameSection  = "Label Preference Text Section 7";
+    var labelData    = [];
+
+    for (var i = 1; i <= 16; i++) {
+        var rawColor  = app.preferences.getPrefAsString(colorSection, "Label Color ID 2 # " + i, PREFType.PREF_Type_MACHINE_INDEPENDENT);
+        var labelName = app.preferences.getPrefAsString(nameSection,  "Label Text ID 2 # "  + i, PREFType.PREF_Type_MACHINE_INDEPENDENT);
+
+        // Convert each raw byte to a 2-digit hex character
+        var hexColor = "";
+        for (var j = 0; j < rawColor.length; j++) {
+            var hexByte = rawColor.charCodeAt(j).toString(16).toUpperCase();
+            hexColor += (hexByte.length < 2 ? "0" + hexByte : hexByte);
+        }
+
+        // AE stores ARGB (8 hex chars); we want the last 6 (RGB only)
+        var finalHex = hexColor.length >= 6 ? hexColor.substring(hexColor.length - 6) : null;
+
+        // Skip labels that returned no usable color data
+        if (!finalHex || finalHex === "000000") {
+            labelData.push({ index: i, name: labelName || ("Label " + i), hex: null });
+        } else {
+            labelData.push({ index: i, name: labelName || ("Label " + i), hex: "#" + finalHex });
+        }
+    }
+
+    return JSON.stringify(labelData);
+}
+
+// =======================
+// ISOLATION MODE
+// =======================
+
+// Solo: toggle solo on selected layers.
+// The reverse trigger (un-solo) checks ONLY visible (non-shy-hidden) layers —
+// hidden layers that AE can't solo are excluded from the condition but the
+// action still applies to the full selection (AE will simply ignore hidden ones).
+function isolateSolo() {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return;
+    var selected = comp.selectedLayers;
+    if (!selected.length) return;
+
+    app.beginUndoGroup("Isolation Mode");
+
+    // "Visible" = selected layers AE will actually respond to for solo.
+    // Shy-hidden layers (shy=true while hideShyLayers is on) cannot be soloed by AE.
+    var visible = [];
+    for (var i = 0; i < selected.length; i++) {
+        if (!(selected[i].shy && comp.hideShyLayers)) visible.push(selected[i]);
+    }
+
+    // If only hidden layers are selected there is nothing actionable to do.
+    if (!visible.length) { app.endUndoGroup(); return; }
+
+    // Reverse trigger: based on visible layers only — hidden ones are ignored.
+    var allSolo = true;
+    for (var j = 0; j < visible.length; j++) {
+        if (!visible[j].solo) { allSolo = false; break; }
+    }
+
+    // Apply to full selection; hidden layers won't respond — that's AE's natural behaviour.
+    for (var k = 0; k < selected.length; k++) {
+        selected[k].solo = !allSolo;
+    }
+
+    app.endUndoGroup();
+    app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
+}
+
+// Shy Focus — three branches:
+//   1. No selection         → toggle global shy mode on/off.
+//   2. ALL selected shy=true AND hideShyLayers=true
+//                           → REVERSE: un-shy every layer + turn global mode off.
+//   3. Otherwise            → FOCUS: selected=visible, others=shy, global mode forced ON.
+function isolateShyFocus() {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return;
+    var selected = comp.selectedLayers;
+
+    app.beginUndoGroup("Isolation Mode");
+
+    // --- Branch 1: no selection — simple global toggle ---
+    if (!selected.length) {
+        comp.hideShyLayers = !comp.hideShyLayers;
+        app.endUndoGroup();
+        app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
+        return;
+    }
+
+    // --- Branch 2: global shy mode is already ON — REVERSE (clear everything) ---
+    // After Focus mode the focused layers have shy=false, so checking allSelectedShy
+    // would always fail for any layer the user can click. The correct signal is simply
+    // that hideShyLayers is on: pressing shy again with a selection → reverse.
+    if (comp.hideShyLayers) {
+        comp.hideShyLayers = false;
+        for (var j = 1; j <= comp.numLayers; j++) comp.layer(j).shy = false;
+        app.endUndoGroup();
+        app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
+        return;
+    }
+
+    // --- Branch 3: FOCUS — selected visible, everything else shy, global mode ON ---
+    var selectedIds = {};
+    for (var k = 0; k < selected.length; k++) selectedIds[selected[k].id] = true;
+
+    for (var m = 1; m <= comp.numLayers; m++) {
+        var layer = comp.layer(m);
+        layer.shy = !selectedIds[layer.id];
+    }
+    comp.hideShyLayers = true;
+
+    app.endUndoGroup();
+    app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
+}
+
+// Lock: if ALL selected are locked -> unlock all; else -> lock all.
+// layer.selected = true allows script access on locked layers.
+function isolateLock() {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return;
+    var selected = comp.selectedLayers;
+    if (!selected.length) return;
+
+    app.beginUndoGroup("Isolation Mode");
+
+    var allLocked = true;
+    for (var i = 0; i < selected.length; i++) {
+        if (!selected[i].locked) { allLocked = false; break; }
+    }
+    for (var j = 0; j < selected.length; j++) {
+        selected[j].locked = !allLocked;
+    }
+
+    app.endUndoGroup();
+    app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
+}
