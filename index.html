@@ -6,6 +6,8 @@
 <head>
     <meta charset="utf-8">
     <title>Holy Layer Master</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dosis:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <!-- #endregion
@@ -17,15 +19,12 @@
 <!-- #region ⬛⬛⬛ BACKGROUND LAYER STACK
 ─────────────────────────────────────────────────── -->
 
-<!-- Layer 4 — CRT Scanlines (full coverage, z-index 1000) -->
-<div class="crt-scanlines" aria-hidden="true"></div>
-
-<!-- Layer 2 — Theme Background Element (2% opacity, offset bottom-right) -->
+<!-- Theme Background Element (2% opacity, offset bottom-right) -->
 <svg id="theme-bg-element" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 267.42 566.59" aria-hidden="true">
     <path d="M267.42,287.1c-104.06,7.3-158.52,68.85-256.77,279.49C96.61,355.16,95.71,291.19,0,279.49,104.06,272.19,158.52,210.65,256.77,0c-85.96,211.43-85.06,275.39,10.65,287.1Z" fill="#FFFFFF" stroke="none"/>
 </svg>
 
-<!-- Layer 3 — Grid Element (abstract, bottom-left crop) -->
+<!-- Grid Element (abstract, bottom-left crop) -->
 <svg class="hp-grid-element" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
         <pattern id="hp-layout-grid" width="5" height="5" patternUnits="userSpaceOnUse">
@@ -33,11 +32,18 @@
         </pattern>
         <pattern id="hp-major-grid" width="32" height="32" patternUnits="userSpaceOnUse">
             <rect width="5" height="5" fill="url(#hp-layout-grid)"/>
-            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#2E2E2E" stroke-width="1"/>
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#2A2A2A" stroke-width="1"/>
         </pattern>
     </defs>
     <rect width="100%" height="100%" fill="url(#hp-major-grid)"/>
 </svg>
+
+<!-- Streak underlay -->
+<div class="obsidian-underlay" aria-hidden="true">
+    <div class="obsidian-underlay-line"></div>
+    <div class="obsidian-underlay-line"></div>
+    <div class="obsidian-underlay-line"></div>
+</div>
 
 <!-- #endregion
 ───────────────
@@ -61,21 +67,18 @@
     ─────────────────────────────────────────────── -->
     <div id="isolationBar" class="isolation-bar">
         <button id="soloBtn" class="iso-btn" title="Toggle solo on selected layers">
-            <!-- icons-bolt-solid-acute — energy / spotlight -->
             <svg viewBox="0 0 8.25 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="8.25 3 4.45 3.77 6.04 0 0 6.65 4.11 6.04 3.04 10 8.25 3"/>
             </svg>
             <span class="iso-label">SOLO</span>
         </button>
         <button id="shyBtn" class="iso-btn" title="Shy focus: hide non-selected layers">
-            <!-- icons-wave-splice — phase / modulate visibility -->
             <svg viewBox="0 0 14.95 8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12.07,4.03c-1.37.23-2.76-.23-3.72-1.23-.77-.8-1.44-1.49-1.44-1.49-.53-.76-1.83-1.12-2.55-.47L.5,4.38l1.97-.38c1.43-.28,2.9.2,3.89,1.27.89.96,1.73,1.84,1.84,1.91.63.43,1.55.43,2.05,0l4.2-3.55-2.38.4Z"/>
             </svg>
             <span class="iso-label">SHY</span>
         </button>
         <button id="lockBtn" class="iso-btn" title="Lock selected layers">
-            <!-- icons-diamond-solid-frame — locked / precious -->
             <svg viewBox="0 0 10.04 10.04" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.01,1.15l3.88,3.88-3.86,3.86-3.88-3.88,3.86-3.86M5.01,0c-.16,0-.33.06-.45.19L.19,4.56c-.25.25-.25.66,0,.91l4.38,4.38c.13.13.29.19.45.19s.33-.06.45-.19l4.37-4.37c.25-.25.25-.66,0-.91L5.47.19c-.13-.13-.29-.19-.45-.19h0Z"/>
             </svg>
@@ -86,31 +89,37 @@
     ───────────────
     ─────────────────────────────────────────────── -->
 
+    <div id="sectionsContainer">
+
     <!-- ────────────────────────────────────────── -->
     <!-- #region 💾💾💾 KEYFRAME MEMORY
     ─────────────────────────────────────────────── -->
-    <div class="section-header">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <div class="section-wrap" data-section-id="kf">
+    <div class="section-header" data-body-id="kfBody" draggable="true">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">KF Memory</span>
     </div>
-    <div id="kfBanksContainer"></div>
-    <div class="bank-controls">
-        <button id="addKfBank" class="ctrl-btn add-btn" title="Add new keyframe memory bank">
-            <!-- icons-plus-line -->
-            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-            </svg>
-        </button>
-        <button id="removeKfBank" class="ctrl-btn rem-btn" title="Remove last keyframe memory bank">
-            <!-- icons-minus-line -->
-            <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
-            </svg>
-        </button>
+    <div class="section-body" id="kfBody">
+        <div id="kfBanksContainer"></div>
+        <div class="bank-controls">
+            <button id="addKfBank" class="ctrl-btn add-btn" title="Add new keyframe memory bank">
+                <!-- icons-plus-line -->
+                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
+                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
+                </svg>
+            </button>
+            <button id="removeKfBank" class="ctrl-btn rem-btn" title="Remove last keyframe memory bank">
+                <!-- icons-minus-line -->
+                <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
+                </svg>
+            </button>
+        </div>
     </div>
+    </div><!-- /section-wrap kf -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -118,26 +127,30 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🗂️🗂️🗂️ LAYER MEMORY
     ─────────────────────────────────────────────── -->
-    <div class="section-header">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <div class="section-wrap" data-section-id="lay">
+    <div class="section-header" data-body-id="layBody" draggable="true">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Layer Memory</span>
     </div>
-    <div id="layBanksContainer"></div>
-    <div class="bank-controls">
-        <button id="addLayBank" class="ctrl-btn add-btn" title="Add new layer memory bank">
-            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-            </svg>
-        </button>
-        <button id="removeLayBank" class="ctrl-btn rem-btn" title="Remove last layer memory bank">
-            <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
-            </svg>
-        </button>
+    <div class="section-body" id="layBody">
+        <div id="layBanksContainer"></div>
+        <div class="bank-controls">
+            <button id="addLayBank" class="ctrl-btn add-btn" title="Add new layer memory bank">
+                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
+                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
+                </svg>
+            </button>
+            <button id="removeLayBank" class="ctrl-btn rem-btn" title="Remove last layer memory bank">
+                <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
+                </svg>
+            </button>
+        </div>
     </div>
+    </div><!-- /section-wrap lay -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -145,38 +158,49 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 📷📷📷 LAYER STATES
     ─────────────────────────────────────────────── -->
-    <div class="section-header">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <div class="section-wrap" data-section-id="states">
+    <div class="section-header" data-body-id="statesBody" draggable="true">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Layer States</span>
-    </div>
-    <div class="row" id="stateRow">
-        <button id="applyStateBtn" class="icon-btn" title="Apply saved timeline switches to matching layers">
-            <!-- icons-zigbolt-outline — send / apply -->
-            <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
+        <button id="clearStateBtn" class="clr-btn" title="Clear current state data">
+            <!-- icons-cross-diagonal — clear / remove -->
+            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="10.5" y1=".5" x2=".5" y2="10.5"/>
+                <line x1=".5" y1=".5" x2="10.5" y2="10.5"/>
             </svg>
         </button>
-        <div class="state-combo-wrap">
-            <input type="text" id="stateNameInput" class="state-combo-input" placeholder="State Name" title="Active State (click to rename)">
-            <button id="stateDropdownBtn" class="state-combo-arrow" title="Switch active state">
-                <!-- icons-chevron-stack-vertical (single chevron down) -->
-                <svg viewBox="0 0 9.17 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                    <polyline points="8.67 .5 4.59 5.5 .5 .5"/>
+    </div>
+    <div class="section-body" id="statesBody">
+        <div class="row" id="stateRow">
+            <button id="applyStateBtn" class="icon-btn" title="Apply saved timeline switches to matching layers">
+                <!-- icons-zigbolt-outline — send / apply -->
+                <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
                 </svg>
             </button>
-            <div id="stateDropdownList" class="state-dropdown-list" style="display:none"></div>
+            <div class="state-combo-wrap">
+                <input type="text" id="stateNameInput" class="state-combo-input" placeholder="State Name" title="Active State (click to rename)">
+                <button id="stateDropdownBtn" class="state-combo-arrow" title="Switch active state">
+                    <!-- icons-chevron-down -->
+                    <svg viewBox="0 0 9.17 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <polyline points="8.67 .5 4.59 5.5 .5 .5"/>
+                    </svg>
+                </button>
+                <div id="stateDropdownList" class="state-dropdown-list" style="display:none"></div>
+            </div>
+            <button id="captureStateBtn" class="icon-btn cap-btn" title="Capture current Eye, Shy, Solo, and Lock states into this snapshot">
+                <!-- icons-lens-split — capture / focus -->
+                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="3.59" y1="3.59" x2=".5" y2=".5"/>
+                    <line x1="10.5" y1="10.5" x2="7.41" y2="7.41"/>
+                    <path d="M7.41,3.59c-1.05-1.05-2.76-1.05-3.82,0-1.05,1.05-1.05,2.76,0,3.82,1.05,1.05,2.76,1.05,3.82,0,1.05-1.05,1.05-2.76,0-3.82Z"/>
+                </svg>
+            </button>
         </div>
-        <button id="captureStateBtn" class="icon-btn" title="Capture current Eye, Shy, Solo, and Lock states into this snapshot">
-            <!-- icons-lens-split — capture / focus -->
-            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1="3.59" y1="3.59" x2=".5" y2=".5"/>
-                <line x1="10.5" y1="10.5" x2="7.41" y2="7.41"/>
-                <path d="M7.41,3.59c-1.05-1.05-2.76-1.05-3.82,0-1.05,1.05-1.05,2.76,0,3.82,1.05,1.05,2.76,1.05,3.82,0,1.05-1.05,1.05-2.76,0-3.82Z"/>
-            </svg>
-        </button>
     </div>
+    </div><!-- /section-wrap states -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -184,26 +208,32 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🔍🔍🔍 SEARCH
     ─────────────────────────────────────────────── -->
-    <div class="section-header">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <div class="section-wrap" data-section-id="search">
+    <div class="section-header" data-body-id="searchBody" draggable="true">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Search</span>
     </div>
-    <div class="row" id="searchRow">
-        <button id="searchBtn" class="icon-btn" title="Quick select layers matched by search term">
-            <!-- icons-target-cross-ring — targeting / select -->
-            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-                <circle cx="5.5" cy="5.47" r="3.56"/>
-            </svg>
-        </button>
-        <input type="text" placeholder="Name // Effect // Comment" id="searchInput" title="Search by name, effect, or comment">
+    <div class="section-body" id="searchBody">
+        <div class="row" id="searchRow">
+            <button id="searchBtn" class="icon-btn" title="Quick select layers matched by search term">
+                <!-- icons-target-cross-ring — targeting / select -->
+                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
+                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
+                    <circle cx="5.5" cy="5.47" r="3.56"/>
+                </svg>
+            </button>
+            <input type="text" placeholder="Name // Effect // Comment" id="searchInput" title="Search by name, effect, or comment">
+        </div>
     </div>
+    </div><!-- /section-wrap search -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
+
+    </div><!-- /sectionsContainer -->
 
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🔁🔁🔁 SYSTEM
@@ -229,6 +259,8 @@
 ─────────────────────────────────────────────────── -->
 
 <script src="js/CSInterface.js"></script>
+<script src="js/colorpicker.js"></script>
+<script src="js/hlm-dragdrop.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,70 +1,69 @@
 /* ────────────────────────────────────────────── */
-/* #region 🎨🎨🎨 COLOR VARIABLES
+/* #region 🎨🎨🎨 1. CSS CUSTOM PROPERTIES
 ─────────────────────────────────────────────────── */
 :root {
-  /* Monochrome */
-  --hp-void: #000000;
-  --hp-surface: #0A0A0A;
-  --hp-border: #1A1A1A;
-  --hp-border-active: #2E2E2E;
+  /* ACCENT — one value to rule them all */
+  --accent:           #ff7c44;
+  --ACCENT-RGB:       255, 124, 68;    /* JS can overwrite at runtime */
+  --ACCENT-H:         22;
+  --ACCENT-S:         100%;
+  --ACCENT-L:         63%;
 
-  /* Signal Colors — Primary (Select / Recall) */
-  --hp-signal-MAIN: #FF0073;
-  --hp-signal-MAIN-dark: #640a23;
-  --hp-signal-MAIN-boost: #fdadb4;
+  /* Derived accent tokens */
+  --accent-dim:        rgba(var(--ACCENT-RGB), 0.18);
+  --accent-veil:       rgba(var(--ACCENT-RGB), 0.10);
+  --accent-border:     rgba(var(--ACCENT-RGB), 0.28);
+  --accent-border-hi:  rgba(var(--ACCENT-RGB), 0.45);
+  --accent-opac-30:    rgba(var(--ACCENT-RGB), 0.3);
+  --accent-opac-20:    rgba(var(--ACCENT-RGB), 0.2);
+  --accent-midlight:   hsl(var(--ACCENT-H), calc(var(--ACCENT-S) * 0.7), 72%);
 
-  /* Signal Colors — Secondary 1 (ISO / State toggles) */
-  --hp-signal-secondary-1: #d3d6d5;
-  --hp-signal-secondary-1-dark: #252525;
-  --hp-signal-secondary-1-boost: #ffffff;
+  /* BACKGROUNDS */
+  --bg-base:    #111214;
+  --bg-panel:   #18191d;
+  --bg-surface: #20222a;
+  --bg-input:   #0e0f12;
 
-  /* Signal Colors — Secondary 2 (Capture / Save) */
-  --hp-signal-secondary-2: #FFB800;
-  --hp-signal-secondary-2-dark: #4a3200;
-  --hp-signal-secondary-2-boost: #ffd980;
+  /* TEXT */
+  --text-primary: #e2e2e8;
+  --text-muted:   rgba(226, 226, 232, 0.5);
+  --text-faint:   rgba(226, 226, 232, 0.22);
 
-  /* Text & States */
-  --hp-signal-white: #F0F0F0;
-  --hp-signal-mid: #888888;
-  --hp-signal-dim: #444444;
-  --hp-danger: #FF2D2D;
+  /* BORDERS */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-accent: rgba(var(--ACCENT-RGB), 0.28);
 
-  /* Effects */
-  --hp-glow-MAIN: rgba(255, 0, 115, 0.15);
-  --hp-glow-teal: rgba(0, 255, 195, 0.12);
-  --hp-glow-amber: rgba(255, 184, 0, 0.15);
+  /* GEOMETRY */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-pill: 999px;
+
+  /* MOTION */
+  --transition: 0.15s ease-in-out;
+
+  /* TYPOGRAPHY */
+  --font-ui:    system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-label: 'Dosis', system-ui, sans-serif;
+
+  /* DANGER */
+  --danger: #ff4d4d;
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 📐📐📐 LAYOUT TOKENS
-─────────────────────────────────────────────────── */
-:root {
-  --hp-stroke-hair: 0.75px;
-  --hp-stroke-thin: 1px;
-  --hp-radius: 0px;
-  --hp-grid-layout: 4px;
-  --hp-gap-segment: 2px;
-  --hp-scanline-opacity: 0.01;
-  --hp-scanline-repeat: 2px;
-  --hp-flicker-duration: 50ms;
-}
-
-/* #endregion
-───────────────
-─────────────────────────────────────────────────── */
-/* #region 🌍🌍🌍 BASE ELEMENTS
+/* #region 🌍🌍🌍 2. BASE ELEMENTS
 ─────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 
-body {
-  background: transparent;
-  color: var(--hp-signal-white);
-  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
-  font-size: 10px;
-  padding: 0;
+body, html {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-primary);
+  background: var(--bg-base);
   margin: 0;
+  padding: 0;
   overflow-x: hidden;
   user-select: none;
 }
@@ -78,57 +77,29 @@ body {
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region ⚡⚡⚡ ANIMATIONS & EFFECTS
+/* #region ⚡⚡⚡ 3. ANIMATIONS
 ─────────────────────────────────────────────────── */
-@keyframes sync-flicker {
-  0%, 100% { opacity: 1; }
-  25%       { opacity: 0.8; }
-  50%       { opacity: 1; }
-  75%       { opacity: 0.9; }
-}
-
 @keyframes comp-flash {
-  0%   { color: var(--hp-signal-white); }
-  100% { color: var(--hp-signal-secondary-1); }
+  0%   { color: var(--text-primary); }
+  100% { color: var(--text-muted); }
 }
 
 .comp-label.flash {
   animation: comp-flash 0.4s steps(4, end);
 }
 
-button:active {
-  animation: sync-flicker var(--hp-flicker-duration) steps(4, end);
-}
-
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🌐🌐🌐 BACKGROUND LAYERS
+/* #region 🌐🌐🌐 4. BACKGROUND LAYERS
 ─────────────────────────────────────────────────── */
-.crt-scanlines {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent var(--hp-scanline-repeat),
-    rgba(255, 255, 255, var(--hp-scanline-opacity)) var(--hp-scanline-repeat),
-    rgba(255, 255, 255, var(--hp-scanline-opacity)) calc(var(--hp-scanline-repeat) * 2)
-  );
-  pointer-events: none;
-  z-index: 1000;
-}
-
 #theme-bg-element {
   position: fixed;
   bottom: -20%;
   right: -15%;
   width: 95%;
   height: auto;
-  opacity: 0.02;
+  opacity: 0.015;
   z-index: 0;
   pointer-events: none;
 }
@@ -143,60 +114,96 @@ button:active {
   pointer-events: none;
 }
 
+/* 5. STREAK UNDERLAY */
+.obsidian-underlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.obsidian-underlay-line {
+  position: absolute;
+  width: 160%;
+  height: 1px;
+  background: rgba(var(--ACCENT-RGB), 0.15);
+  opacity: 0.5;
+}
+
+.obsidian-underlay-line:nth-child(1) {
+  top: 22%;
+  left: -20%;
+  transform: rotate(10deg);
+}
+
+.obsidian-underlay-line:nth-child(2) {
+  top: 52%;
+  left: -18%;
+  transform: rotate(14deg);
+  opacity: 0.28;
+}
+
+.obsidian-underlay-line:nth-child(3) {
+  bottom: 12%;
+  left: -22%;
+  transform: rotate(8deg);
+  opacity: 0.18;
+}
+
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 💎💎💎 COMP LABEL
+/* #region 💎💎💎 6. COMP LABEL
 ─────────────────────────────────────────────────── */
 .comp-label {
+  font-family: var(--font-ui);
   font-size: 8px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 5px 4px 7px;
-  border-bottom: 1px solid var(--hp-border);
+  padding: 4px 4px 5px;
+  border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 2px;
-  color: var(--hp-signal-secondary-1);
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  color: var(--text-muted);
 }
 
 .comp-label::before {
   content: "COMP:// ";
-  color: var(--hp-signal-dim);
+  color: var(--text-faint);
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🔲🔲🔲 ISOLATION BAR
+/* #region 🔲🔲🔲 7. ISOLATION BAR
 ─────────────────────────────────────────────────── */
 .isolation-bar {
   display: flex;
   gap: 2px;
-  margin: 4px 0 2px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--hp-border);
+  margin: 3px 0 2px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .iso-btn {
   flex: 1;
-  height: 38px;
-  width: auto;
+  height: 28px;
   padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  background-color: var(--hp-signal-secondary-1-dark);
-  border: 1px solid var(--hp-signal-secondary-1);
-  color: var(--hp-signal-secondary-1);
-  border-radius: var(--hp-radius);
+  gap: 2px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all var(--hp-flicker-duration) steps(4, end);
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  transition: all var(--transition);
+  font-family: var(--font-ui);
 }
 
 .iso-btn svg {
@@ -206,56 +213,87 @@ button:active {
   flex-shrink: 0;
 }
 
+/* Solo + Shy icons slightly larger for legibility */
+#soloBtn svg, #shyBtn svg {
+  width: 12px;
+  height: 12px;
+}
+
 .iso-label {
-  font-size: 6.5px;
-  letter-spacing: 1.5px;
-  font-weight: 700;
+  font-size: 7px;
+  letter-spacing: 1px;
+  font-weight: 600;
   text-transform: uppercase;
   line-height: 1;
 }
 
 .iso-btn:hover {
-  background-color: var(--hp-signal-secondary-1);
-  border-color: var(--hp-signal-secondary-1-boost);
-  color: var(--hp-signal-secondary-1-dark);
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.iso-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 📌📌📌 SECTION HEADERS
+/* #region 📌📌📌 8. SECTION HEADERS
 ─────────────────────────────────────────────────── */
 .section-header {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin: 10px 0 3px;
-  padding-left: 6px;
-  border-left: 2px solid var(--hp-signal-MAIN);
+  margin: 5px 0 2px;
 }
 
 .section-star {
   width: 7px;
   height: 7px;
   flex-shrink: 0;
-  color: var(--hp-signal-MAIN);
-  opacity: 0.8;
+  color: var(--accent);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.section-star:hover {
+  opacity: 1;
+}
+
+.section-star.star-collapsed {
+  opacity: 0.28;
+  transform: rotate(-45deg);
 }
 
 .section-title {
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 7.5px;
+  font-family: var(--font-label);
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--hp-signal-mid);
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
   text-transform: uppercase;
   flex: 1;
+  pointer-events: none;
+}
+
+/* Section body — collapsible */
+.section-body {
+  /* visible by default */
+}
+
+.section-body.section-collapsed {
+  display: none;
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🔘🔘🔘 BANK ROWS
+/* #region 🔘🔘🔘 9. ROWS & INPUTS
 ─────────────────────────────────────────────────── */
 .row {
   display: flex;
@@ -264,195 +302,222 @@ button:active {
   gap: 2px;
 }
 
-/* ALL inputs */
-input {
+/* All text inputs */
+input:not([type="color"]):not([type="checkbox"]):not([type="radio"]) {
   flex-grow: 1;
-  background-color: var(--hp-surface);
-  color: var(--hp-signal-white);
-  border: 1px solid var(--hp-border);
-  border-radius: var(--hp-radius);
-  padding: 4px 6px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
   outline: none;
-  min-width: 40px;
+  min-width: 0;
   font-size: 9px;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  height: 28px;
+  font-family: var(--font-ui);
+  letter-spacing: 0.3px;
+  height: 22px;
+  transition: border-color var(--transition);
 }
 
-input::placeholder {
-  color: var(--hp-signal-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+input:not([type="color"]):not([type="checkbox"])::placeholder {
+  color: var(--text-faint);
   font-style: normal;
 }
 
-input:focus {
-  border-color: var(--hp-signal-MAIN);
-  box-shadow: inset 0 0 8px var(--hp-glow-MAIN);
-  background-color: var(--hp-surface);
+input:not([type="color"]):not([type="checkbox"]):focus {
+  border-color: var(--accent-border-hi);
 }
 
-/* Base button reset */
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region ⬛⬛⬛ 10. BUTTON BASE
+─────────────────────────────────────────────────── */
 button {
-  background-color: var(--hp-surface);
-  color: var(--hp-signal-mid);
-  border: 1px solid var(--hp-border-active);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
   padding: 0;
   cursor: pointer;
-  border-radius: var(--hp-radius);
-  width: 28px;
-  height: 28px;
+  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  font-size: 8px;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 7.5px;
+  font-family: var(--font-ui);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all var(--hp-flicker-duration) steps(4, end);
+  letter-spacing: 0.8px;
+  transition: all var(--transition);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 button:hover {
-  background-color: var(--hp-border-active);
-  color: var(--hp-signal-white);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Icon button base */
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🟠🟠🟠 11. ICON BUTTONS
+─────────────────────────────────────────────────── */
 .icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.icon-btn svg {
-  width: 11px;
-  height: 11px;
-  display: block;
   flex-shrink: 0;
 }
 
-/* SELECT buttons — pink / primary signal */
-.sel-btn,
-#searchBtn,
-#applyStateBtn {
-  background-color: var(--hp-signal-MAIN-dark);
-  border-color: var(--hp-signal-MAIN);
-  color: var(--hp-signal-MAIN);
+.icon-btn svg {
+  width: 10px;
+  height: 10px;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
-.sel-btn:hover,
-#searchBtn:hover,
-#applyStateBtn:hover {
-  background-color: var(--hp-signal-MAIN);
-  border-color: var(--hp-signal-MAIN-boost);
-  color: var(--hp-signal-MAIN-dark);
+/* SELECT buttons — color managed by JS inline styles at all times */
+.sel-btn {
+  width: 23px;
+  height: 23px;
+  border-radius: var(--radius-sm);
+  border-width: 1px;
+  /* JS sets: background, border-color, color */
 }
 
-/* CAPTURE buttons — amber */
-.cap-btn,
-#captureStateBtn {
-  background-color: var(--hp-signal-secondary-2-dark);
-  border-color: var(--hp-signal-secondary-2);
-  color: var(--hp-signal-secondary-2);
+.sel-btn:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.cap-btn:hover,
-#captureStateBtn:hover {
-  background-color: var(--hp-signal-secondary-2);
-  border-color: var(--hp-signal-secondary-2-boost);
-  color: var(--hp-signal-secondary-2-dark);
+/* CAPTURE buttons — smaller, neutral base; JS applies color when has data */
+.cap-btn {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-faint);
+  border-radius: var(--radius-sm);
 }
 
-/* cap-active — bank has saved data (amber glow indicator) */
-.icon-btn.cap-active {
-  background-color: var(--hp-signal-secondary-2-dark);
-  border-color: var(--hp-signal-secondary-2);
-  color: var(--hp-signal-secondary-2);
-  box-shadow: 0 0 6px var(--hp-glow-amber);
+.cap-btn svg {
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
 }
 
-.icon-btn.cap-active:hover {
-  background-color: var(--hp-signal-secondary-2);
-  border-color: var(--hp-signal-secondary-2-boost);
-  color: var(--hp-signal-secondary-2-dark);
+.cap-btn:hover {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-muted);
+}
+
+.cap-btn.cap-active:hover {
+  opacity: 0.72;
+  background: transparent;
+}
+
+/* Action buttons — accent solid fill (apply, search) */
+#applyStateBtn,
+#searchBtn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+}
+
+#applyStateBtn:hover,
+#searchBtn:hover {
+  opacity: 0.82;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
 }
 
 /* CLEAR / DELETE button */
 .clr-btn {
-  width: 20px;
-  height: 20px;
-  color: var(--hp-signal-dim);
-  padding: 0;
-  border-color: transparent;
+  width: 18px;
+  height: 18px;
+  color: var(--text-faint);
+  border: none;
   background: transparent;
   align-self: center;
   flex-shrink: 0;
+  border-radius: var(--radius-sm);
 }
 
 .clr-btn svg {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   display: block;
+  pointer-events: none;
 }
 
 .clr-btn:hover {
-  color: var(--hp-danger);
-  background-color: transparent;
+  color: var(--danger);
+  background: transparent;
   border-color: transparent;
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 💡💡💡 BANK CONTROLS (+/-)
+/* #region 💡💡💡 12. BANK CONTROLS (+/-)
 ─────────────────────────────────────────────────── */
 .bank-controls {
   display: flex;
   gap: 2px;
-  margin: 2px 0 6px;
+  margin: 1px 0 2px;
 }
 
 .ctrl-btn {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--hp-surface);
-  border: 1px solid var(--hp-border-active);
-  color: var(--hp-signal-dim);
+  background: transparent;
+  border: none;
+  color: rgba(226, 226, 232, 0.35);
+  border-radius: var(--radius-sm);
 }
 
 .ctrl-btn svg {
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   display: block;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
 .add-btn:hover {
-  border-color: var(--hp-signal-MAIN);
-  color: var(--hp-signal-MAIN);
-  background-color: var(--hp-signal-MAIN-dark);
+  color: var(--accent);
+  background: transparent;
+  border-color: transparent;
 }
 
 .rem-btn:hover {
-  border-color: var(--hp-danger);
-  color: var(--hp-danger);
-  background-color: rgba(255, 45, 45, 0.1);
+  color: var(--danger);
+  background: transparent;
+  border-color: transparent;
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 📷📷📷 LAYER STATES COMBO
+/* #region 📷📷📷 13. LAYER STATES COMBO
 ─────────────────────────────────────────────────── */
 .state-combo-wrap {
   flex: 1;
@@ -465,36 +530,40 @@ button:hover {
   flex: 1;
   min-width: 0;
   border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .state-combo-arrow {
-  width: 20px;
-  height: 28px;
+  width: 18px;
+  height: 22px;
   padding: 0;
-  border-left: 1px solid var(--hp-border);
-  background-color: var(--hp-surface);
-  color: var(--hp-signal-mid);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-muted);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--hp-border);
-  border-right: 1px solid var(--hp-border);
-  border-bottom: 1px solid var(--hp-border);
   cursor: pointer;
-  transition: all var(--hp-flicker-duration) steps(4, end);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+  transition: all var(--transition);
 }
 
 .state-combo-arrow svg {
-  width: 9px;
-  height: 7px;
+  width: 8px;
+  height: 6px;
   display: block;
+  pointer-events: none;
 }
 
 .state-combo-arrow:hover {
-  background-color: var(--hp-border-active);
-  color: var(--hp-signal-white);
-  border-color: var(--hp-border-active);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .state-dropdown-list {
@@ -502,26 +571,27 @@ button:hover {
   top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--hp-surface);
-  border: 1px solid var(--hp-border-active);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   z-index: 100;
-  max-height: 120px;
+  max-height: 100px;
   overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .dropdown-item {
-  padding: 5px 8px;
+  padding: 4px 8px;
   cursor: pointer;
   font-size: 8.5px;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  color: var(--hp-signal-mid);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: var(--font-ui);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 1px solid var(--hp-border);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition);
 }
 
 .dropdown-item:last-child {
@@ -529,178 +599,273 @@ button:hover {
 }
 
 .dropdown-item:hover {
-  background-color: var(--hp-border-active);
-  color: var(--hp-signal-white);
+  background: var(--accent-dim);
+  color: var(--text-primary);
 }
 
 .dropdown-item.active {
-  color: var(--hp-signal-secondary-1);
-  background-color: var(--hp-signal-secondary-1-dark);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .dropdown-item.create-new {
-  color: var(--hp-signal-dim);
-  border-top: 1px solid var(--hp-border-active);
-  font-style: normal;
-  letter-spacing: 0;
+  color: var(--text-faint);
 }
 
 .dropdown-item.create-new:hover {
-  color: var(--hp-signal-MAIN);
-  background-color: var(--hp-signal-MAIN-dark);
+  color: var(--accent);
+  background: var(--accent-dim);
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🔍🔍🔍 SEARCH & SYSTEM ROW
+/* #region 🔍🔍🔍 14. SYSTEM ROW
 ─────────────────────────────────────────────────── */
 .hp-sys-row {
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid var(--hp-border);
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sys-btn {
   width: 100%;
-  height: 22px;
-  padding: 0 8px;
-  font-size: 7.5px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 7px;
   letter-spacing: 2px;
-  color: var(--hp-signal-dim);
-  border-color: var(--hp-border);
+  color: var(--text-faint);
+  border-color: var(--border-subtle);
   background: transparent;
   justify-content: center;
   gap: 5px;
+  border-radius: var(--radius-sm);
 }
 
 .sys-btn svg {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
 .sys-btn:hover {
-  color: var(--hp-signal-mid);
-  border-color: var(--hp-border-active);
-  background-color: var(--hp-surface);
+  color: var(--text-muted);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: transparent;
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🎛️🎛️🎛️ COLOR PICKER POPUP
+/* #region 🎛️🎛️🎛️ 15. COLOR PICKER POPUP
 ─────────────────────────────────────────────────── */
+/* Popup container — spans panel width, set by JS */
 .color-picker-popup {
   position: fixed;
   z-index: 1001;
-  background: var(--hp-surface);
-  border: 1px solid var(--hp-border-active);
-  border-radius: var(--hp-radius);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--hp-border);
-  min-width: 154px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
 }
 
-.cp-swatch-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 16px);
+/* Row 1: OK (left) | Reset (right) */
+.cp-top-row {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.cp-ok-btn {
+  flex: 1;
+  width: auto;
+  height: 20px;
+  font-size: 7.5px;
+  letter-spacing: 1px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.cp-ok-btn:hover {
+  background: var(--accent);
+  color: #0d0d0f;
+  border-color: var(--accent);
+}
+
+.cp-reset-btn {
+  flex: 1;
+  width: auto;
+  height: 20px;
+  font-size: 7.5px;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.cp-reset-btn:hover {
+  color: var(--text-muted);
+  background: var(--bg-panel);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Row 2: [native picker btn] [# hex input] */
+.cp-input-row {
+  display: flex;
+  align-items: center;
   gap: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
+}
+
+.cp-hash {
+  color: var(--text-faint);
+  font-size: 10px;
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+}
+
+#cpHexInput {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 2px 4px;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary) !important;
+  font-size: 9px;
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  outline: none;
+}
+
+#cpHexInput:focus {
+  border-color: var(--accent-border-hi) !important;
+}
+
+.cp-native-btn {
+  width: 24px;
+  height: 22px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+}
+
+.cp-native-btn:hover {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Row 3+: Swatches — flex-wrap so they reflow with panel width */
+.cp-swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .cp-swatch {
-  width: 16px;
-  height: 16px;
-  border-radius: var(--hp-radius);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  position: relative;
-  transition: transform var(--hp-flicker-duration) steps(2, end);
+  transition: transform var(--transition);
 }
 
 .cp-swatch:hover {
-  transform: scale(1.3);
-  border-color: var(--hp-signal-white);
+  transform: scale(1.28);
+  border-color: rgba(255, 255, 255, 0.45);
   z-index: 1;
 }
 
 .cp-swatch-empty {
   background: repeating-linear-gradient(
     45deg,
-    var(--hp-border) 0,
-    var(--hp-border) 3px,
-    var(--hp-surface) 3px,
-    var(--hp-surface) 6px
+    var(--border-subtle) 0,
+    var(--border-subtle) 3px,
+    transparent 3px,
+    transparent 6px
   );
   cursor: default;
-}
-
-.cp-hex-row {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-bottom: 4px;
-}
-
-.cp-hash {
-  color: var(--hp-signal-dim);
-  font-size: 10px;
-  flex-shrink: 0;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-#cpHexInput {
-  flex: 1;
-  min-width: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  height: 24px;
-  padding: 2px 4px;
-}
-
-.cp-btn {
-  width: 28px;
-  height: 24px;
-  font-size: 7.5px;
-  padding: 0;
-  flex-shrink: 0;
-  letter-spacing: 1px;
-  background-color: var(--hp-signal-MAIN-dark);
-  border-color: var(--hp-signal-MAIN);
-  color: var(--hp-signal-MAIN);
-}
-
-.cp-btn:hover {
-  background-color: var(--hp-signal-MAIN);
-  color: var(--hp-signal-MAIN-dark);
-  border-color: var(--hp-signal-MAIN-boost);
-}
-
-.cp-reset-btn {
-  width: 100%;
-  height: 22px;
-  font-size: 7.5px;
-  letter-spacing: 1.5px;
-  color: var(--hp-signal-dim);
-  background: transparent;
-  border-color: var(--hp-border-active);
-  padding: 0;
-  text-transform: uppercase;
-}
-
-.cp-reset-btn:hover {
-  color: var(--hp-signal-mid);
-  background: var(--hp-border);
-  border-color: var(--hp-border-active);
 }
 
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 📱📱📱 NARROW / RESPONSIVE
+/* #region 📜📜📜 16. SCROLLBARS
+─────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--ACCENT-RGB), 0.28);
+  border-radius: 2px;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🔢🔢🔢 17. STATE CLASSES
+─────────────────────────────────────────────────── */
+.is-hidden          { display: none !important; }
+.is-disabled        { opacity: 0.35; pointer-events: none; }
+.is-active          { color: var(--accent); }
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🔀🔀🔀 19. DRAG AND DROP
+─────────────────────────────────────────────────── */
+/* Drop indicator is injected by hlm-dragdrop.js — no CSS needed here for it. */
+
+/* Section headers are drag handles — grab cursor on the title area */
+.section-header[draggable="true"] {
+  cursor: grab;
+}
+
+.section-header[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Star keeps its pointer cursor, overriding the grab from the parent header */
+.section-star {
+  cursor: pointer;
+}
+
+/* Dragged section wrap fades out at source */
+.section-wrap.section-dragging {
+  opacity: 0.4;
+  transition: opacity var(--transition);
+}
+
+/* Bank row fades at source during drag */
+.row.bank-dragging {
+  opacity: 0.4;
+  transition: opacity var(--transition);
+}
+
+/* Select button signals it is the bank drag handle */
+.sel-btn {
+  cursor: grab;
+}
+
+.sel-btn:active {
+  cursor: grabbing;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 📱📱📱 18. NARROW / RESPONSIVE
 ─────────────────────────────────────────────────── */
 .narrow .isolation-bar {
   flex-direction: column;
@@ -708,14 +873,25 @@ button:hover {
 }
 
 .narrow .iso-btn {
-  height: 44px;
-  min-width: 10px;
+  height: 62px;
+  width: 100%;
+  min-width: 0;
   flex-direction: row;
-  gap: 6px;
+  gap: 8px;
+}
+
+.narrow .iso-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.narrow .iso-label {
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
 }
 
 .narrow .section-title {
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
 }
 
 .narrow #kfBanksContainer .row,
@@ -738,10 +914,6 @@ button:hover {
   order: -1;
   flex: 0 0 100%;
   margin-bottom: 2px;
-}
-
-.narrow #stateRow #applyStateBtn {
-  margin-right: 0;
 }
 
 /* Stack search input above its button */

@@ -1,8 +1,66 @@
 const csInterface = new CSInterface();
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
 
-// --- SVG icon strings ---
+// ─────────────────────────────────────────────────────
+// #region BANK ICON POOL
+// Random icons assigned to banks at creation; stored as index in bank.iconIdx
+// ─────────────────────────────────────────────────────
+const BANK_ICONS = [
+    // 0: wave
+    `<svg viewBox="0 0 12 7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M.5 3.5c1-3 2.5-3 3 0s2 3 3 0 2-3 3 0 1 3 2 0"/></svg>`,
+    // 1: diamond
+    `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polygon points="5,0.8 9.2,5 5,9.2 0.8,5"/></svg>`,
+    // 2: triangle
+    `<svg viewBox="0 0 10 9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><polygon points="5,0.8 9.2,8.5 0.8,8.5"/></svg>`,
+    // 3: crosshair circle
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="5.5" cy="5.5" r="3.2"/><line x1="5.5" y1=".5" x2="5.5" y2="2.2"/><line x1="5.5" y1="8.8" x2="5.5" y2="10.5"/><line x1=".5" y1="5.5" x2="2.2" y2="5.5"/><line x1="8.8" y1="5.5" x2="10.5" y2="5.5"/></svg>`,
+    // 4: hexagon
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polygon points="5.5,0.8 9.8,3.1 9.8,7.9 5.5,10.2 1.2,7.9 1.2,3.1"/></svg>`,
+    // 5: lightning bolt
+    `<svg viewBox="0 0 8 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.5.5H3L.5 5.5h3L1.5 10.5l6-6.5H4.5z"/></svg>`,
+    // 6: star
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polygon points="5.5,0.5 6.57,4.43 10.5,5.5 6.57,6.57 5.5,10.5 4.43,6.57 0.5,5.5 4.43,4.43"/></svg>`,
+    // 7: arrow right
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><line x1="1.5" y1="5.5" x2="9.5" y2="5.5"/><polyline points="6.5,2.5 9.5,5.5 6.5,8.5"/></svg>`,
+    // 8: eye
+    `<svg viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M.5 4C2 1.5 3.8.5 6 .5 8.2.5 10 1.5 11.5 4 10 6.5 8.2 7.5 6 7.5 3.8 7.5 2 6.5.5 4z"/><circle cx="6" cy="4" r="1.5" fill="currentColor" stroke="none"/></svg>`,
+    // 9: grid / four squares
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="3.5" height="3.5" rx=".5"/><rect x="6.5" y="1" width="3.5" height="3.5" rx=".5"/><rect x="1" y="6.5" width="3.5" height="3.5" rx=".5"/><rect x="6.5" y="6.5" width="3.5" height="3.5" rx=".5"/></svg>`,
+    // 10: layers / stack
+    `<svg viewBox="0 0 12 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M1 3l5 2.5 5-2.5-5-2.5z"/><path d="M1 6l5 2.5 5-2.5"/><path d="M1 4.5l5 2.5 5-2.5"/></svg>`,
+    // 11: octagon
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M3.5.7h4l2.8 2.8v4L7.5 10.3h-4L.7 7.5v-4z"/></svg>`,
+    // 12: moon
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M8 7A4.5 4.5 0 014 2.5a4.5 4.5 0 100 9A4.5 4.5 0 008 7z"/></svg>`,
+    // 13: circle + ring
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="5.5" cy="5.5" r="4.5" stroke-width="1.1"/><circle cx="5.5" cy="5.5" r="1.8" stroke-width="1.1"/></svg>`,
+    // 14: plus / cross bold
+    `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><line x1="5.5" y1="1.5" x2="5.5" y2="9.5"/><line x1="1.5" y1="5.5" x2="9.5" y2="5.5"/></svg>`,
+    // 15: X bold
+    `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`,
+];
+
+// Default color palette for auto-assigning to new banks
+const BANK_PALETTE = [
+    '#ff7c44', // orange
+    '#44aaff', // blue
+    '#44e8aa', // mint
+    '#aa44ff', // purple
+    '#ffcc44', // amber
+    '#ff4488', // pink
+    '#44e8ff', // cyan
+    '#aaff44', // lime
+    '#ff6655', // coral
+    '#7755ff', // violet
+    '#55ff99', // green
+    '#ff99bb', // rose
+];
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region SVG ICON STRINGS (for select / capture / close)
+// ─────────────────────────────────────────────────────
 const SVG = {
     // icons-cursor-sting — select / recall
     select:  `<svg viewBox="0 0 9.98 9.98" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9.17,5.27l-2.69.92c-.13.05-.24.15-.28.28l-.92,2.69c-.13.38-.66.41-.83.05L.55,1.15c-.19-.39.22-.79.6-.6l8.07,3.89c.36.18.33.7-.05.83Z"/></svg>`,
@@ -11,12 +69,14 @@ const SVG = {
     // icons-cross-diagonal — delete / clear
     close:   `<svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="10.5" y1=".5" x2=".5" y2="10.5"/><line x1=".5" y1=".5" x2="10.5" y2="10.5"/></svg>`
 };
+// #endregion
 
-// --- Storage Setup (data lives adjacent to the .aep in _HLM_Data/) ---
+// ─────────────────────────────────────────────────────
+// #region STORAGE SETUP
+// ─────────────────────────────────────────────────────
 function getDataDir(projPath) {
     return path.join(path.dirname(projPath), '_HLM_Data');
 }
-// Bank files are namespaced by comp: _HLM_Data/<compId>_<bankId>.json
 function getSavePath(projPath, compId, bankId) {
     return path.join(getDataDir(projPath), `${compId}_${bankId}.json`);
 }
@@ -27,19 +87,22 @@ function ensureDataDir(projPath) {
     const dir = getDataDir(projPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 }
+// #endregion
 
-// --- Default Config (3 banks each, IDs 1-3, nextId starts at 4) ---
+// ─────────────────────────────────────────────────────
+// #region DEFAULT CONFIG
+// ─────────────────────────────────────────────────────
 function makeDefaultConfig() {
     return {
         kfBanks: [
-            { id: 'KfBank_1', name: 'KF Bank A' },
-            { id: 'KfBank_2', name: 'KF Bank B' },
-            { id: 'KfBank_3', name: 'KF Bank C' }
+            { id: 'KfBank_1', name: 'KF Bank A', iconIdx: 5 },
+            { id: 'KfBank_2', name: 'KF Bank B', iconIdx: 0 },
+            { id: 'KfBank_3', name: 'KF Bank C', iconIdx: 4 }
         ],
         layBanks: [
-            { id: 'LayBank_1', name: 'Lay Bank A' },
-            { id: 'LayBank_2', name: 'Lay Bank B' },
-            { id: 'LayBank_3', name: 'Lay Bank C' }
+            { id: 'LayBank_1', name: 'Lay Bank A', iconIdx: 6 },
+            { id: 'LayBank_2', name: 'Lay Bank B', iconIdx: 9 },
+            { id: 'LayBank_3', name: 'Lay Bank C', iconIdx: 8 }
         ],
         layStates: [
             { id: 'State_1', name: 'State A' },
@@ -47,7 +110,15 @@ function makeDefaultConfig() {
             { id: 'State_3', name: 'State C' }
         ],
         nextId: 4,
-        bankColors: {}   // bankId / stateId -> custom hex color for cap-active state
+        sectionOrder: ['kf', 'lay', 'states', 'search'],
+        bankColors: {
+            'KfBank_1':  '#ff7c44',
+            'KfBank_2':  '#44aaff',
+            'KfBank_3':  '#44e8aa',
+            'LayBank_1': '#aa44ff',
+            'LayBank_2': '#ffcc44',
+            'LayBank_3': '#ff4488',
+        }
     };
 }
 
@@ -57,9 +128,25 @@ let currentCompId   = null;
 let currentCompName = null;
 let activeStateId   = 'State_1';
 
-// --- Color Picker ---
-let _aeLabels     = null;   // cached AE label colors (null = not yet fetched)
-let _pickerBankId = null;   // which bank/state the open picker is targeting
+// Drag state is managed internally by hlm-dragdrop.js
+
+// ─────────────────────────────────────────────────────
+// #region HELPERS
+// ─────────────────────────────────────────────────────
+function getBankColor(bankId) {
+    return currentConfig.bankColors[bankId] || '#ff7c44';
+}
+
+function getBankIconSvg(bank) {
+    const idx = (bank.iconIdx !== undefined) ? (bank.iconIdx % BANK_ICONS.length) : 0;
+    return BANK_ICONS[idx];
+}
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region COLOR PICKER (delegates to HLMColorPicker module in colorpicker.js)
+// ─────────────────────────────────────────────────────
+let _aeLabels = null;
 
 function fetchAELabels(cb) {
     if (_aeLabels) { cb(_aeLabels); return; }
@@ -69,148 +156,62 @@ function fetchAELabels(cb) {
     });
 }
 
-function buildColorPicker() {
-    const picker = document.createElement('div');
-    picker.id        = 'hlmColorPicker';
-    picker.className = 'color-picker-popup';
-    picker.style.display = 'none';
-    picker.innerHTML = `
-        <div id="cpSwatchGrid" class="cp-swatch-grid"></div>
-        <div class="cp-hex-row">
-            <span class="cp-hash">#</span>
-            <input type="text" id="cpHexInput" maxlength="6" placeholder="rrggbb" spellcheck="false">
-            <button id="cpApplyBtn" class="cp-btn">OK</button>
-        </div>
-        <button id="cpResetBtn" class="cp-reset-btn">Reset to default</button>
-    `;
-    document.body.appendChild(picker);
-
-    document.getElementById('cpApplyBtn').addEventListener('click', () => {
-        const val = document.getElementById('cpHexInput').value.trim().replace(/^#/, '');
-        if (/^[0-9a-fA-F]{6}$/.test(val)) applyPickerColor('#' + val.toUpperCase());
-    });
-    document.getElementById('cpHexInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') document.getElementById('cpApplyBtn').click();
-    });
-    document.getElementById('cpResetBtn').addEventListener('click', () => applyPickerColor(null));
-}
-
+// Thin wrapper so existing call-sites stay unchanged
 function openColorPicker(bankId, anchorEl) {
-    _pickerBankId = bankId;
-    const picker   = document.getElementById('hlmColorPicker');
-    const hexInput = document.getElementById('cpHexInput');
-    const current  = currentConfig.bankColors[bankId];
-    hexInput.value = current ? current.replace('#', '') : '';
-    picker.style.display = 'block';
-
-    fetchAELabels(labels => {
-        const grid = document.getElementById('cpSwatchGrid');
-        grid.innerHTML = '';
-        labels.forEach(lbl => {
-            const sw = document.createElement('div');
-            sw.className = 'cp-swatch';
-            if (lbl.hex) {
-                sw.style.backgroundColor = lbl.hex;
-                sw.title = lbl.name || `Label ${lbl.index}`;
-                sw.addEventListener('click', () => applyPickerColor(lbl.hex));
-            } else {
-                // Label with no color — show as placeholder slot
-                sw.classList.add('cp-swatch-empty');
-                sw.title = lbl.name ? `${lbl.name} (no color set)` : `Label ${lbl.index} (no color set)`;
-            }
-            grid.appendChild(sw);
-        });
-        positionPicker(picker, anchorEl);
-    });
-
-    // Position immediately with whatever dimensions are available; will reflow
-    // after labels load but that's fine for the initial paint
-    positionPicker(picker, anchorEl);
+    HLMColorPicker.open(bankId, anchorEl, currentConfig.bankColors[bankId]);
 }
+// #endregion
 
-function positionPicker(picker, anchorEl) {
-    const rect = anchorEl.getBoundingClientRect();
-    picker.style.left = '0px';
-    picker.style.top  = '0px';
-    const pw = picker.offsetWidth  || 170;
-    const ph = picker.offsetHeight || 110;
-    let left = rect.left;
-    let top  = rect.bottom + 3;
-    if (left + pw > window.innerWidth)  left = window.innerWidth  - pw - 2;
-    if (left < 2)                        left = 2;
-    if (top  + ph > window.innerHeight)  top  = rect.top - ph - 3;
-    if (top  < 2)                        top  = 2;
-    picker.style.left = left + 'px';
-    picker.style.top  = top  + 'px';
-}
-
-function applyPickerColor(hex) {
-    if (!_pickerBankId) return;
-    if (hex) {
-        currentConfig.bankColors[_pickerBankId] = hex;
-    } else {
-        delete currentConfig.bankColors[_pickerBankId];
-    }
-    saveConfig();
-    refreshBankIndicators();
-    refreshStateIndicator();
-    closeColorPicker();
-}
-
-// Applies custom colors to buttons, handling both empty (outline) and stored (filled) states.
-// If no custom color is set, it clears inline styles to let CSS defaults take over.
-function applyButtonColor(btn, id, hasData) {
-    const customColor = currentConfig.bankColors[id];
-    if (customColor) {
-        if (hasData) {
-            // Stored state with custom color: FILLED
-            btn.style.backgroundColor = customColor;
-            btn.style.borderColor = customColor;
-            btn.style.color = ''; // Reset to let CSS handle it
-        } else {
-            // Empty state with custom color: OUTLINE
-            btn.style.backgroundColor = 'transparent';
-            btn.style.borderColor = customColor;
-            btn.style.color = customColor;
-        }
-    } else {
-        // No custom color, reset styles to let CSS classes handle it
-        btn.style.backgroundColor = '';
-        btn.style.borderColor      = '';
-        btn.style.color = '';
-    }
-}
-
-// --- Config Persistence (per AE project, not per comp) ---
+// ─────────────────────────────────────────────────────
+// #region CONFIG PERSISTENCE
+// ─────────────────────────────────────────────────────
 function loadConfig(projPath) {
     const cfgPath = getConfigPath(projPath);
     if (fs.existsSync(cfgPath)) {
         try {
             const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-            // Backfill layStates for configs saved before this feature existed
+            // Backfill missing fields
             if (!cfg.layStates)   cfg.layStates   = makeDefaultConfig().layStates;
-            if (!cfg.bankColors)  cfg.bankColors   = {};
+            if (!cfg.bankColors)  cfg.bankColors  = {};
+            if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search'];
+
+            // Ensure every bank has iconIdx and a color
+            const allBanks = [...cfg.kfBanks, ...cfg.layBanks];
+            allBanks.forEach((bank, i) => {
+                if (bank.iconIdx === undefined) {
+                    bank.iconIdx = i % BANK_ICONS.length;
+                }
+                if (!cfg.bankColors[bank.id]) {
+                    cfg.bankColors[bank.id] = BANK_PALETTE[i % BANK_PALETTE.length];
+                }
+            });
             return cfg;
         } catch (e) {}
     }
     return makeDefaultConfig();
 }
+
 function saveConfig() {
     if (!currentProjPath) return;
     ensureDataDir(currentProjPath);
     fs.writeFileSync(getConfigPath(currentProjPath), JSON.stringify(currentConfig), 'utf8');
 }
+// #endregion
 
-// --- Render Bank Row (order: [Sel] [Name] [Cap] [×]) ---
+// ─────────────────────────────────────────────────────
+// #region RENDER BANK ROW
+// Order: [Sel — bank icon, fully colored] [Name input] [Cap — smaller] [×]
+// ─────────────────────────────────────────────────────
 function renderBankRow(type, bank) {
     const row = document.createElement('div');
     row.className = 'row';
     const isKf = type === 'kf';
 
+    // SELECT button — shows bank's random icon, always fully colored by JS
     const selBtn = document.createElement('button');
     selBtn.id        = `sel_${bank.id}`;
     selBtn.className = 'icon-btn sel-btn';
-    selBtn.innerHTML = SVG.select;
+    selBtn.innerHTML = getBankIconSvg(bank);
     selBtn.title     = isKf ? 'Restore saved keyframe positions' : 'Recall saved layer selection';
     selBtn.addEventListener('click', () => selectData(type, bank.id, `name_${bank.id}`));
 
@@ -223,6 +224,7 @@ function renderBankRow(type, bank) {
         saveConfig();
     });
 
+    // CAPTURE button — smaller; neutral unless bank has data
     const capBaseTitle = isKf
         ? 'Capture current keyframe positions. Warning: Adding more keyframes after capture will alter the state.'
         : 'Capture current selection into this layer memory bank';
@@ -235,6 +237,7 @@ function renderBankRow(type, bank) {
     capBtn.addEventListener('click', () => captureData(type, bank.id));
     capBtn.addEventListener('contextmenu', e => { e.preventDefault(); openColorPicker(bank.id, capBtn); });
 
+    // CLEAR button
     const clrBtn = document.createElement('button');
     clrBtn.className = 'clr-btn';
     clrBtn.innerHTML = SVG.close;
@@ -263,16 +266,36 @@ function renderAll() {
     refreshBankIndicators();
     syncStatesUI();
 }
+// #endregion
 
-// --- Add / Remove Banks ---
+// ─────────────────────────────────────────────────────
+// #region DRAG AND DROP  (logic lives in hlm-dragdrop.js)
+// ─────────────────────────────────────────────────────
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region ADD / REMOVE BANKS
+// ─────────────────────────────────────────────────────
 function addBank(type) {
     const id   = type === 'kf' ? `KfBank_${currentConfig.nextId}`  : `LayBank_${currentConfig.nextId}`;
     const name = type === 'kf' ? `KF Bank ${currentConfig.nextId}` : `Lay Bank ${currentConfig.nextId}`;
+    const iconIdx = Math.floor(Math.random() * BANK_ICONS.length);
     currentConfig.nextId++;
-    (type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks).push({ id, name });
+
+    const banks = type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks;
+    banks.push({ id, name, iconIdx });
+
+    // Auto-assign a palette color to the new bank
+    if (!currentConfig.bankColors[id]) {
+        const allBanks = [...currentConfig.kfBanks, ...currentConfig.layBanks];
+        const colorIdx = (allBanks.length - 1) % BANK_PALETTE.length;
+        currentConfig.bankColors[id] = BANK_PALETTE[colorIdx];
+    }
+
     saveConfig();
     renderAll();
 }
+
 function removeBank(type) {
     const banks = type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks;
     if (banks.length === 0) return;
@@ -280,62 +303,82 @@ function removeBank(type) {
     saveConfig();
     renderAll();
 }
+// #endregion
 
-// --- Active Comp Label ---
+// ─────────────────────────────────────────────────────
+// #region ACTIVE COMP LABEL
+// ─────────────────────────────────────────────────────
 function updateCompLabel(name) {
     const el = document.getElementById('activeCompLabel');
     if (!el) return;
     el.textContent = name ? name.toUpperCase() : 'NO ACTIVE COMP';
     if (name) {
         el.classList.remove('flash');
-        void el.offsetWidth; // force reflow so animation restarts cleanly
+        void el.offsetWidth;
         el.classList.add('flash');
         el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
     }
 }
+// #endregion
 
-// --- Bank Indicators (cap button color + tooltip count) ---
+// ─────────────────────────────────────────────────────
+// #region BANK INDICATORS
+// Select button — always solid with bank color
+// Capture button — theme-colored border/icon if has data; plain if empty
+// ─────────────────────────────────────────────────────
 function getBankCount(projPath, compId, bankId) {
     try {
         const fp = getSavePath(projPath, compId, bankId);
         if (!fs.existsSync(fp)) return 0;
         const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
         if (data.layers)    return data.layers.length;
-        if (data.ids)       return data.ids.length;      // backward compat
+        if (data.ids)       return data.ids.length;
         if (data.keyframes) return data.keyframes.length;
     } catch(e) {}
     return 0;
 }
+
 function refreshBankIndicators() {
-    [...currentConfig.kfBanks, ...currentConfig.layBanks].forEach(({ id }) => {
+    [...currentConfig.kfBanks, ...currentConfig.layBanks].forEach(bank => {
+        const { id } = bank;
         const capBtn = document.getElementById(`cap_${id}`);
         const selBtn = document.getElementById(`sel_${id}`);
         if (!capBtn || !selBtn) return;
 
-        const count = (currentProjPath && currentCompId)
-            ? getBankCount(currentProjPath, currentCompId, id) : 0;
+        const count   = (currentProjPath && currentCompId) ? getBankCount(currentProjPath, currentCompId, id) : 0;
         const hasData = count > 0;
+        const color   = getBankColor(id);
 
-        // Toggle active class for both buttons
+        // SELECT: always fully colored with bank's theme color
+        selBtn.style.backgroundColor = color;
+        selBtn.style.borderColor     = color;
+        selBtn.style.color           = '#0d0d0f';
+
+        // CAPTURE: outline + icon in theme color when data exists; plain when empty
         capBtn.classList.toggle('cap-active', hasData);
-        selBtn.classList.toggle('cap-active', hasData);
+        if (hasData) {
+            capBtn.style.backgroundColor = 'transparent';
+            capBtn.style.borderColor     = color;
+            capBtn.style.color           = color;
+        } else {
+            capBtn.style.backgroundColor = '';
+            capBtn.style.borderColor     = '';
+            capBtn.style.color           = '';
+        }
 
-        // Apply custom colors (or reset to CSS defaults) for both
-        applyButtonColor(capBtn, id, hasData);
-        applyButtonColor(selBtn, id, hasData);
-
-        // Update tooltip on capture button only
+        // Tooltip
         const base = capBtn.dataset.baseTitle || '';
         capBtn.title = hasData ? `${base} (${count} saved)` : base;
     });
 }
+// #endregion
 
-// --- Layer States ---
-
+// ─────────────────────────────────────────────────────
+// #region LAYER STATES
+// ─────────────────────────────────────────────────────
 function syncStatesUI() {
     const input = document.getElementById('stateNameInput');
     if (!input) return;
-    // Validate activeStateId is still present in current config
     if (!activeStateId || !currentConfig.layStates.find(s => s.id === activeStateId)) {
         activeStateId = currentConfig.layStates.length > 0 ? currentConfig.layStates[0].id : null;
     }
@@ -397,7 +440,18 @@ function refreshStateIndicator() {
         fs.existsSync(getSavePath(currentProjPath, currentCompId, activeStateId))
     );
     btn.classList.toggle('cap-active', hasData);
-    if (activeStateId) applyButtonColor(btn, activeStateId, hasData);
+    if (activeStateId) {
+        const color = getBankColor(activeStateId);
+        if (hasData) {
+            btn.style.backgroundColor = 'transparent';
+            btn.style.borderColor     = color;
+            btn.style.color           = color;
+        } else {
+            btn.style.backgroundColor = '';
+            btn.style.borderColor     = '';
+            btn.style.color           = '';
+        }
+    }
 }
 
 function captureStateData() {
@@ -428,30 +482,30 @@ function applyStateData() {
     const filePath = getSavePath(currentProjPath, currentCompId, activeStateId);
     if (!fs.existsSync(filePath)) return alert('This state is empty — capture it first.');
 
-    const state    = currentConfig.layStates.find(s => s.id === activeStateId);
+    const state      = currentConfig.layStates.find(s => s.id === activeStateId);
     const stateName  = state ? state.name : activeStateId;
     const safeFilePath = filePath.replace(/\\/g, '\\\\');
     csInterface.evalScript(`applyLayerStates("${safeFilePath}", "${stateName}")`, result => {
         if (result && result.indexOf('ERROR') !== -1) alert(result);
     });
 }
+// #endregion
 
-// --- Polling Loop ---
-// Fires once immediately on startup (for fast initial load), then every 1000ms.
+// ─────────────────────────────────────────────────────
+// #region POLLING LOOP
+// ─────────────────────────────────────────────────────
 let _lastPolledProjPath = null;
 let _lastPolledCompId   = null;
 
 function _applyContext(ctx) {
-    // Project changed (new .aep opened, or first load)
     if (ctx.projPath !== 'UNSAVED' && ctx.projPath !== _lastPolledProjPath) {
         _lastPolledProjPath = ctx.projPath;
         currentProjPath     = ctx.projPath;
         currentConfig       = loadConfig(ctx.projPath);
-        // Reset active state to first state of the new project's config
         activeStateId = currentConfig.layStates.length > 0 ? currentConfig.layStates[0].id : null;
         renderAll();
+        HLMDragDrop.applyOrder(currentConfig.sectionOrder);
     }
-    // Active comp changed
     if (ctx.compId !== _lastPolledCompId) {
         _lastPolledCompId = ctx.compId;
         currentCompId     = ctx.compId;
@@ -463,6 +517,8 @@ function _applyContext(ctx) {
 }
 
 function startPolling() {
+    let _interval = null;
+
     const poll = () => {
         csInterface.evalScript('getProjectAndCompContext()', raw => {
             let ctx;
@@ -470,11 +526,27 @@ function startPolling() {
             _applyContext(ctx);
         });
     };
-    poll();                          // immediate call — don't wait 1s on first load
-    setInterval(poll, 1000);
-}
 
-// --- Capture / Select ---
+    const start = () => {
+        if (_interval) return;
+        poll();                              // immediate sync on focus restore
+        _interval = setInterval(poll, 1000);
+    };
+
+    const stop = () => {
+        clearInterval(_interval);
+        _interval = null;
+    };
+
+    window.addEventListener('focus', start);
+    window.addEventListener('blur',  stop);
+    start(); // initial poll + interval on load
+}
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region CAPTURE / SELECT
+// ─────────────────────────────────────────────────────
 function captureData(type, bankId) {
     if (!currentProjPath || currentProjPath === 'UNSAVED')
         return alert('Please save your After Effects project first!');
@@ -511,8 +583,11 @@ function selectData(type, bankId, labelId) {
         if (result && result.indexOf('ERROR') !== -1) alert(result);
     });
 }
+// #endregion
 
-// --- Event Listeners ---
+// ─────────────────────────────────────────────────────
+// #region EVENT LISTENERS
+// ─────────────────────────────────────────────────────
 document.getElementById('addKfBank').addEventListener('click',    () => addBank('kf'));
 document.getElementById('removeKfBank').addEventListener('click', () => removeBank('kf'));
 document.getElementById('addLayBank').addEventListener('click',    () => addBank('lay'));
@@ -534,7 +609,15 @@ document.getElementById('captureStateBtn').addEventListener('contextmenu', e => 
     e.preventDefault();
     if (activeStateId) openColorPicker(activeStateId, e.currentTarget);
 });
-document.getElementById('applyStateBtn').addEventListener('click',   applyStateData);
+document.getElementById('applyStateBtn').addEventListener('click', applyStateData);
+
+// Clear active state data
+document.getElementById('clearStateBtn').addEventListener('click', () => {
+    if (!currentProjPath || !currentCompId || !activeStateId) return;
+    const fp = getSavePath(currentProjPath, currentCompId, activeStateId);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    refreshStateIndicator();
+});
 
 document.getElementById('stateNameInput').addEventListener('input', () => {
     if (!activeStateId) return;
@@ -556,24 +639,34 @@ document.getElementById('stateDropdownBtn').addEventListener('click', () => {
     }
 });
 
-// Close dropdown / color picker when clicking anywhere outside them
+// Close state dropdown when clicking outside (picker close is handled by the module)
 document.addEventListener('click', e => {
     const list = document.getElementById('stateDropdownList');
     if (list && !e.target.closest('.state-combo-wrap')) {
         list.style.display = 'none';
     }
-    const picker = document.getElementById('hlmColorPicker');
-    if (picker && picker.style.display !== 'none' && !e.target.closest('#hlmColorPicker')) {
-        closeColorPicker();
-    }
 });
 
-// Render with defaults immediately, then polling takes over once AE responds
-buildColorPicker();
-renderAll();
-startPolling();
+// ─────────────────────────────────────────────────────
+// Section collapse — click star to toggle section-body
+// ─────────────────────────────────────────────────────
+document.querySelectorAll('.section-star').forEach(star => {
+    star.addEventListener('click', e => {
+        const header = e.currentTarget.closest('.section-header');
+        if (!header) return;
+        const bodyId = header.dataset.bodyId;
+        if (!bodyId) return;
+        const body = document.getElementById(bodyId);
+        if (!body) return;
+        const isNowCollapsed = body.classList.toggle('section-collapsed');
+        e.currentTarget.classList.toggle('star-collapsed', isNowCollapsed);
+    });
+});
+// #endregion
 
-// --- Narrow sidepanel layout: toggle .narrow on body via ResizeObserver ---
+// ─────────────────────────────────────────────────────
+// #region NARROW LAYOUT (ResizeObserver)
+// ─────────────────────────────────────────────────────
 (function () {
     if (typeof ResizeObserver === 'undefined') return;
     const BREAKPOINT = 150;
@@ -581,3 +674,48 @@ startPolling();
         document.body.classList.toggle('narrow', entries[0].contentRect.width < BREAKPOINT);
     }).observe(document.body);
 }());
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// Boot
+// ─────────────────────────────────────────────────────
+HLMColorPicker.init({
+    fetchSwatches: function (cb) { fetchAELabels(cb); },
+    onApply: function (targetId, hex) {
+        currentConfig.bankColors[targetId] = hex;
+        saveConfig();
+        refreshBankIndicators();
+        refreshStateIndicator();
+    },
+    onReset: function (targetId) {
+        delete currentConfig.bankColors[targetId];
+        const allBanks = [...currentConfig.kfBanks, ...currentConfig.layBanks];
+        const idx = allBanks.findIndex(b => b.id === targetId);
+        if (idx >= 0) currentConfig.bankColors[targetId] = BANK_PALETTE[idx % BANK_PALETTE.length];
+        saveConfig();
+        refreshBankIndicators();
+        refreshStateIndicator();
+    }
+});
+renderAll();
+HLMDragDrop.init({
+    sectionsContainerId : 'sectionsContainer',
+    sectionIdAttr       : 'data-section-id',
+    getOrder            : () => currentConfig.sectionOrder,
+    onSectionDrop       : function (newOrder) {
+        currentConfig.sectionOrder = newOrder;
+        saveConfig();
+    },
+    rowContainers : [
+        { containerId: 'kfBanksContainer',  type: 'kf'  },
+        { containerId: 'layBanksContainer', type: 'lay' },
+    ],
+    onRowDrop : function (type, fromIdx, insertAt) {
+        const banks = type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks;
+        banks.splice(insertAt, 0, banks.splice(fromIdx, 1)[0]);
+        saveConfig();
+        renderAll();
+    },
+});
+HLMDragDrop.applyOrder(currentConfig.sectionOrder);
+startPolling();
