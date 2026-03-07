@@ -110,7 +110,7 @@ function makeDefaultConfig() {
             { id: 'State_3', name: 'State C' }
         ],
         nextId: 4,
-        sectionOrder: ['kf', 'lay', 'states', 'search'],
+        sectionOrder: ['kf', 'lay', 'states', 'search', 'rename'],
         bankColors: {
             'KfBank_1':  '#ff7c44',
             'KfBank_2':  '#44aaff',
@@ -173,7 +173,9 @@ function loadConfig(projPath) {
             // Backfill missing fields
             if (!cfg.layStates)   cfg.layStates   = makeDefaultConfig().layStates;
             if (!cfg.bankColors)  cfg.bankColors  = {};
-            if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search'];
+            if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search', 'rename'];
+            // Backfill 'rename' into older saved configs that pre-date the section
+            if (cfg.sectionOrder.indexOf('rename') === -1) cfg.sectionOrder.push('rename');
 
             // Ensure every bank has iconIdx and a color
             const allBanks = [...cfg.kfBanks, ...cfg.layBanks];
@@ -214,6 +216,7 @@ function renderBankRow(type, bank) {
     selBtn.innerHTML = getBankIconSvg(bank);
     selBtn.title     = isKf ? 'Restore saved keyframe positions' : 'Recall saved layer selection';
     selBtn.addEventListener('click', () => selectData(type, bank.id, `name_${bank.id}`));
+    selBtn.addEventListener('contextmenu', e => { e.preventDefault(); openBankContextMenu(bank.id, type, e.currentTarget); });
 
     const nameInput = document.createElement('input');
     nameInput.type  = 'text';
@@ -235,7 +238,7 @@ function renderBankRow(type, bank) {
     capBtn.title           = capBaseTitle;
     capBtn.dataset.baseTitle = capBaseTitle;
     capBtn.addEventListener('click', () => captureData(type, bank.id));
-    capBtn.addEventListener('contextmenu', e => { e.preventDefault(); openColorPicker(bank.id, capBtn); });
+    capBtn.addEventListener('contextmenu', e => { e.preventDefault(); openBankContextMenu(bank.id, type, e.currentTarget); });
 
     // CLEAR button
     const clrBtn = document.createElement('button');
@@ -586,12 +589,145 @@ function selectData(type, bankId, labelId) {
 // #endregion
 
 // ─────────────────────────────────────────────────────
+// #region BANK CONTEXT MENU
+// Right-click on selBtn or capBtn → dropdown with Clear / Colours
+// ─────────────────────────────────────────────────────
+let _bankCtxMenu  = null;
+let _bankCtxId    = null;
+let _bankCtxType  = null;
+
+function _buildBankCtxMenu() {
+    if (_bankCtxMenu) return;
+    _bankCtxMenu = document.createElement('div');
+    _bankCtxMenu.id        = 'bankCtxMenu';
+    _bankCtxMenu.className = 'bank-ctx-menu';
+    _bankCtxMenu.style.display = 'none';
+    _bankCtxMenu.innerHTML = `
+        <div class="bank-ctx-item ctx-danger" id="bankCtxClear">Clear</div>
+        <div class="bank-ctx-item"            id="bankCtxColours">Colours</div>
+    `;
+    document.body.appendChild(_bankCtxMenu);
+
+    document.getElementById('bankCtxClear').addEventListener('click', () => {
+        const id = _bankCtxId;
+        _closeBankCtxMenu();
+        if (!currentProjPath || !currentCompId || !id) return;
+        const fp = getSavePath(currentProjPath, currentCompId, id);
+        if (fs.existsSync(fp)) fs.unlinkSync(fp);
+        refreshBankIndicators();
+    });
+
+    document.getElementById('bankCtxColours').addEventListener('click', () => {
+        const id = _bankCtxId;
+        _closeBankCtxMenu();
+        // anchor to cap button so picker positions correctly
+        const anchor = document.getElementById(`cap_${id}`) || document.getElementById(`sel_${id}`);
+        if (anchor) openColorPicker(id, anchor);
+    });
+
+    document.addEventListener('click', e => {
+        if (_bankCtxMenu &&
+            _bankCtxMenu.style.display !== 'none' &&
+            !e.target.closest('#bankCtxMenu')) {
+            _closeBankCtxMenu();
+        }
+    });
+}
+
+function _closeBankCtxMenu() {
+    if (_bankCtxMenu) _bankCtxMenu.style.display = 'none';
+    _bankCtxId   = null;
+    _bankCtxType = null;
+}
+
+function openBankContextMenu(bankId, type, anchorEl) {
+    _buildBankCtxMenu();
+    _bankCtxId   = bankId;
+    _bankCtxType = type;
+
+    _bankCtxMenu.style.display = 'block';
+
+    // Position below the anchor; flip above if near bottom of panel
+    const rect = anchorEl.getBoundingClientRect();
+    const mh   = _bankCtxMenu.offsetHeight || 60;
+    const mw   = _bankCtxMenu.offsetWidth  || 90;
+
+    let top  = rect.bottom + 3;
+    let left = rect.left;
+
+    if (top + mh > window.innerHeight) top  = rect.top - mh - 3;
+    if (top < 2)                        top  = 2;
+    if (left + mw > window.innerWidth)  left = window.innerWidth - mw - 4;
+    if (left < 2)                       left = 2;
+
+    _bankCtxMenu.style.top  = top  + 'px';
+    _bankCtxMenu.style.left = left + 'px';
+}
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region RENAME
+// ─────────────────────────────────────────────────────
+let _renameMode = 'search';
+
+function _updateRenameUI() {
+    const isSearch = _renameMode === 'search';
+    const input1   = document.getElementById('renameInput1');
+    const input2   = document.getElementById('renameInput2');
+    if (!input1 || !input2) return;
+
+    input2.style.display = isSearch ? '' : 'none';
+
+    if (_renameMode === 'prefix') {
+        input1.placeholder = 'Prefix text';
+    } else if (_renameMode === 'suffix') {
+        input1.placeholder = 'Suffix text';
+    } else {
+        input1.placeholder = 'Find';
+    }
+
+    document.querySelectorAll('.rename-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === _renameMode);
+    });
+}
+
+function _fireRename() {
+    const input1 = document.getElementById('renameInput1');
+    const input2 = document.getElementById('renameInput2');
+    const text1  = input1 ? input1.value : '';
+    const text2  = (input2 && _renameMode === 'search') ? input2.value : '';
+
+    const b64Text1 = btoa(unescape(encodeURIComponent(text1)));
+    const b64Text2 = btoa(unescape(encodeURIComponent(text2)));
+
+    csInterface.evalScript(`renameLayersB64("${_renameMode}", "${b64Text1}", "${b64Text2}")`, result => {
+        if (result && result.indexOf('ERROR') !== -1) alert(result);
+    });
+}
+// #endregion
+
+// ─────────────────────────────────────────────────────
 // #region EVENT LISTENERS
 // ─────────────────────────────────────────────────────
 document.getElementById('addKfBank').addEventListener('click',    () => addBank('kf'));
 document.getElementById('removeKfBank').addEventListener('click', () => removeBank('kf'));
 document.getElementById('addLayBank').addEventListener('click',    () => addBank('lay'));
 document.getElementById('removeLayBank').addEventListener('click', () => removeBank('lay'));
+
+// Rename
+document.querySelectorAll('.rename-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        _renameMode = btn.dataset.mode;
+        _updateRenameUI();
+    });
+});
+document.getElementById('renameBtn').addEventListener('click', _fireRename);
+// Also fire on Enter in either rename input
+['renameInput1', 'renameInput2'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') _fireRename();
+    });
+});
 
 document.getElementById('searchBtn').addEventListener('click', () => {
     const term    = document.getElementById('searchInput').value;
@@ -698,6 +834,7 @@ HLMColorPicker.init({
     }
 });
 renderAll();
+_updateRenameUI();
 HLMDragDrop.init({
     sectionsContainerId : 'sectionsContainer',
     sectionIdAttr       : 'data-section-id',

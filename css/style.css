@@ -865,6 +865,100 @@ button:hover {
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
+/* #region ✏️✏️✏️ 20. RENAME SECTION
+─────────────────────────────────────────────────── */
+.rename-mode-row {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+
+.rename-mode-btn {
+  flex: 1;
+  height: 18px;
+  width: auto;
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border-radius: var(--radius-sm);
+}
+
+.rename-mode-btn:hover {
+  color: var(--text-muted);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: transparent;
+}
+
+.rename-mode-btn.active {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+/* Fire/apply button matches searchBtn accent fill */
+#renameBtn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+}
+
+#renameBtn:hover {
+  opacity: 0.82;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+}
+
+#renameBtn svg {
+  width: 9px;
+  height: 11px;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🗂️🗂️🗂️ 21. BANK CONTEXT MENU
+─────────────────────────────────────────────────── */
+.bank-ctx-menu {
+  position: fixed;
+  z-index: 1002;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  min-width: 80px;
+}
+
+.bank-ctx-item {
+  padding: 5px 9px;
+  cursor: pointer;
+  font-size: 8px;
+  font-family: var(--font-label);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+
+.bank-ctx-item:hover {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+.bank-ctx-item.ctx-danger:hover {
+  background: rgba(255, 77, 77, 0.12);
+  color: var(--danger);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
 /* #region 📱📱📱 18. NARROW / RESPONSIVE
 ─────────────────────────────────────────────────── */
 .narrow .isolation-bar {
@@ -922,6 +1016,18 @@ button:hover {
 }
 
 .narrow #searchRow #searchInput {
+  order: -1;
+  flex: 0 0 100%;
+  margin-bottom: 2px;
+}
+
+/* Stack rename inputs in narrow mode */
+.narrow #renameRow {
+  flex-wrap: wrap;
+}
+
+.narrow #renameRow #renameInput1,
+.narrow #renameRow #renameInput2 {
   order: -1;
   flex: 0 0 100%;
   margin-bottom: 2px;

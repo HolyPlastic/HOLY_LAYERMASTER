@@ -233,6 +233,38 @@
     ───────────────
     ─────────────────────────────────────────────── -->
 
+    <!-- ────────────────────────────────────────── -->
+    <!-- #region ✏️✏️✏️ RENAME
+    ─────────────────────────────────────────────── -->
+    <div class="section-wrap" data-section-id="rename">
+    <div class="section-header" data-body-id="renameBody" draggable="true">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
+            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+        </svg>
+        <span class="section-title">Rename</span>
+    </div>
+    <div class="section-body" id="renameBody">
+        <div class="rename-mode-row">
+            <button class="rename-mode-btn active" data-mode="search" id="renameModeSearch">SEARCH</button>
+            <button class="rename-mode-btn" data-mode="prefix" id="renameModePrefix">PREFIX</button>
+            <button class="rename-mode-btn" data-mode="suffix" id="renameModeSuffix">SUFFIX</button>
+        </div>
+        <div class="row" id="renameRow">
+            <button id="renameBtn" class="icon-btn" title="Rename selected layers">
+                <!-- lightning bolt — fire / execute -->
+                <svg viewBox="0 0 8 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.5.5H3L.5 5.5h3L1.5 10.5l6-6.5H4.5z"/>
+                </svg>
+            </button>
+            <input type="text" id="renameInput1" placeholder="Find">
+            <input type="text" id="renameInput2" placeholder="Replace">
+        </div>
+    </div>
+    </div><!-- /section-wrap rename -->
+    <!-- #endregion
+    ───────────────
+    ─────────────────────────────────────────────── -->
+
     </div><!-- /sectionsContainer -->
 
     <!-- ────────────────────────────────────────── -->
