@@ -273,6 +273,44 @@ function searchLayersB64(b64Term) {
 }
 
 // =======================
+// RENAME LOGIC
+// =======================
+
+// renameLayersB64: renames all selected layers based on mode.
+// mode: "search" (find & replace), "prefix" (prepend), "suffix" (append)
+// text1/text2 are Base64-encoded to avoid injection issues.
+function renameLayersB64(mode, b64Text1, b64Text2) {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return "ERROR: Select a composition.";
+    var selected = comp.selectedLayers;
+    if (!selected.length) return "ERROR: No layers selected.";
+
+    var text1 = decodeURIComponent(escape(Base64.decode(b64Text1)));
+    var text2 = b64Text2 ? decodeURIComponent(escape(Base64.decode(b64Text2))) : "";
+
+    app.beginUndoGroup("Rename Selected Layers");
+
+    for (var i = 0; i < selected.length; i++) {
+        var name = selected[i].name;
+        if (mode === "search") {
+            // Global search & replace; empty search string acts as prefix
+            if (text1 === "") {
+                selected[i].name = text2 + name;
+            } else {
+                selected[i].name = name.split(text1).join(text2);
+            }
+        } else if (mode === "prefix") {
+            selected[i].name = text1 + name;
+        } else if (mode === "suffix") {
+            selected[i].name = name + text1;
+        }
+    }
+
+    app.endUndoGroup();
+    return "SUCCESS";
+}
+
+// =======================
 // LAYER STATES LOGIC
 // =======================
 
@@ -327,6 +365,9 @@ function applyLayerStates(filePath, stateName) {
     var data;
     try { data = JSON.parse(dataStr); } catch(e) { return "ERROR: Corrupt state data."; }
 
+    // Capture hideShyLayers target before undo group so we can apply it reliably after
+    var targetHideShyLayers = (typeof data.hideShyLayers !== 'undefined') ? !!data.hideShyLayers : null;
+
     app.beginUndoGroup("Apply Layer State: " + stateName);
 
     // Build id -> record and instanceId -> record lookup maps
@@ -336,11 +377,6 @@ function applyLayerStates(filePath, stateName) {
     for (var r = 0; r < records.length; r++) {
         idMap[records[r].id] = records[r];
         if (records[r].instanceId) instanceMap[records[r].instanceId] = records[r];
-    }
-
-    // Apply global comp flag
-    if (typeof data.hideShyLayers !== 'undefined') {
-        comp.hideShyLayers = data.hideShyLayers;
     }
 
     for (var i = 1; i <= comp.numLayers; i++) {
@@ -374,6 +410,13 @@ function applyLayerStates(filePath, stateName) {
     }
 
     app.endUndoGroup();
+
+    // Apply global comp shy flag OUTSIDE the undo group — setting it inside an undo
+    // group can cause AE to silently ignore the change in some configurations.
+    if (targetHideShyLayers !== null) {
+        comp.hideShyLayers = targetHideShyLayers;
+    }
+
     return "SUCCESS";
 }
 
@@ -446,9 +489,10 @@ function isolateSolo() {
         if (!visible[j].solo) { allSolo = false; break; }
     }
 
-    // Apply to full selection; hidden layers won't respond — that's AE's natural behaviour.
-    for (var k = 0; k < selected.length; k++) {
-        selected[k].solo = !allSolo;
+    // Apply only to visible layers; shy-hidden layers cannot be soloed in AE
+    // and attempting to set solo on them may cause an error.
+    for (var k = 0; k < visible.length; k++) {
+        try { visible[k].solo = !allSolo; } catch(e) {}
     }
 
     app.endUndoGroup();
@@ -493,7 +537,7 @@ function isolateShyFocus() {
 
     for (var m = 1; m <= comp.numLayers; m++) {
         var layer = comp.layer(m);
-        layer.shy = !selectedIds[layer.id];
+        try { layer.shy = !selectedIds[layer.id]; } catch(e) {}
     }
     comp.hideShyLayers = true;
 
@@ -516,7 +560,7 @@ function isolateLock() {
         if (!selected[i].locked) { allLocked = false; break; }
     }
     for (var j = 0; j < selected.length; j++) {
-        selected[j].locked = !allLocked;
+        try { selected[j].locked = !allLocked; } catch(e) {}
     }
 
     app.endUndoGroup();
