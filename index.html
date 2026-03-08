@@ -225,6 +225,38 @@
     ─────────────────────────────────────────────── -->
 
     <!-- ────────────────────────────────────────── -->
+    <!-- #region ✏️✏️✏️ LAYER RENAME
+    ─────────────────────────────────────────────── -->
+    <div class="section-header" data-body-id="renameBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+        </svg>
+        <span class="section-title">Rename</span>
+    </div>
+    <div class="section-body" id="renameBody">
+        <!-- Mode selectors -->
+        <div class="rename-modes">
+            <button id="renameModeSearch" class="rename-mode-btn rename-mode-active" title="Search and replace text in layer names">SRCH</button>
+            <button id="renameModePrefix" class="rename-mode-btn" title="Add text before layer name">PFX</button>
+            <button id="renameModeSuffix" class="rename-mode-btn" title="Add text after layer name">SFX</button>
+        </div>
+        <!-- Fire row -->
+        <div class="row" id="renameRow">
+            <button id="renameFireBtn" class="icon-btn rename-fire-btn" title="Apply rename to selected layers">
+                <!-- icons-zigbolt-outline — fire / apply -->
+                <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
+                </svg>
+            </button>
+            <input type="text" id="renameInput1" placeholder="Search…" title="Text to search for">
+            <input type="text" id="renameInput2" placeholder="Replace…" title="Replace with">
+        </div>
+    </div>
+    <!-- #endregion
+    ───────────────
+    ─────────────────────────────────────────────── -->
+
+    <!-- ────────────────────────────────────────── -->
     <!-- #region 🔁🔁🔁 SYSTEM
     ─────────────────────────────────────────────── -->
     <div class="row hp-sys-row">
@@ -246,6 +278,12 @@
 <!-- #endregion
 ───────────────
 ─────────────────────────────────────────────────── -->
+
+<!-- Bank context dropdown (shared, shown on right-click of sel/cap buttons) -->
+<div id="bankContextMenu" class="bank-ctx-menu" style="display:none">
+    <div id="bankCtxClear" class="bank-ctx-item">Clear</div>
+    <div id="bankCtxColours" class="bank-ctx-item">Colours</div>
+</div>
 
 <script src="js/CSInterface.js"></script>
 <script src="js/colorpicker.js"></script>

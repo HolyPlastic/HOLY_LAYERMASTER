@@ -110,7 +110,7 @@ function makeDefaultConfig() {
             { id: 'State_3', name: 'State C' }
         ],
         nextId: 4,
-        sectionOrder: ['kf', 'lay', 'states', 'search'],
+        sectionOrder: ['kf', 'lay', 'states', 'search', 'rename'],
         bankColors: {
             'KfBank_1':  '#ff7c44',
             'KfBank_2':  '#44aaff',
@@ -172,7 +172,7 @@ function loadConfig(projPath) {
             // Backfill missing fields
             if (!cfg.layStates)  cfg.layStates  = makeDefaultConfig().layStates;
             if (!cfg.bankColors) cfg.bankColors  = {};
-            if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search'];
+            if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search', 'rename'];
 
             // Ensure every bank has iconIdx and a color
             const allBanks = [...cfg.kfBanks, ...cfg.layBanks];
@@ -234,7 +234,6 @@ function renderBankRow(type, bank) {
     capBtn.title           = capBaseTitle;
     capBtn.dataset.baseTitle = capBaseTitle;
     capBtn.addEventListener('click', () => captureData(type, bank.id));
-    capBtn.addEventListener('contextmenu', e => { e.preventDefault(); openColorPicker(bank.id, capBtn); });
 
     // CLEAR button
     const clrBtn = document.createElement('button');
@@ -253,6 +252,11 @@ function renderBankRow(type, bank) {
     stack.className = 'bank-btn-stack';
     stack.appendChild(selBtn);
     stack.appendChild(capBtn);
+
+    // Wire up right-click context menu (clear / colours) on both buttons
+    if (window._attachBankContextMenu) {
+        window._attachBankContextMenu(bank.id, capBtn, selBtn);
+    }
 
     row.appendChild(stack);
     row.appendChild(nameInput);
@@ -579,6 +583,118 @@ function selectData(type, bankId, labelId) {
         if (result && result.indexOf('ERROR') !== -1) alert(result);
     });
 }
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region LAYER RENAME
+// ─────────────────────────────────────────────────────
+(function () {
+    let renameMode = 'search'; // 'search' | 'prefix' | 'suffix'
+
+    const modeBtns = {
+        search: document.getElementById('renameModeSearch'),
+        prefix: document.getElementById('renameModePrefix'),
+        suffix: document.getElementById('renameModeSuffix'),
+    };
+    const input1 = document.getElementById('renameInput1');
+    const input2 = document.getElementById('renameInput2');
+
+    function setMode(mode) {
+        renameMode = mode;
+        Object.keys(modeBtns).forEach(k => {
+            modeBtns[k].classList.toggle('rename-mode-active', k === mode);
+        });
+        if (mode === 'search') {
+            input1.placeholder = 'Search\u2026';
+            input2.style.display = '';
+        } else if (mode === 'prefix') {
+            input1.placeholder = 'Prefix text\u2026';
+            input2.style.display = 'none';
+        } else {
+            input1.placeholder = 'Suffix text\u2026';
+            input2.style.display = 'none';
+        }
+    }
+
+    modeBtns.search.addEventListener('click', () => setMode('search'));
+    modeBtns.prefix.addEventListener('click', () => setMode('prefix'));
+    modeBtns.suffix.addEventListener('click', () => setMode('suffix'));
+
+    document.getElementById('renameFireBtn').addEventListener('click', () => {
+        const t1 = input1.value;
+        const t2 = renameMode === 'search' ? input2.value : '';
+        if (!t1 && renameMode !== 'search') return alert('Please enter some text.');
+        if (renameMode === 'search' && !t1) return alert('Please enter a search term.');
+        const b64t1 = btoa(unescape(encodeURIComponent(t1)));
+        const b64t2 = btoa(unescape(encodeURIComponent(t2)));
+        csInterface.evalScript(`renameSelectedLayers("${renameMode}", "${b64t1}", "${b64t2}")`, result => {
+            if (result && result.indexOf('ERROR') !== -1) alert(result);
+        });
+    });
+}());
+// #endregion
+
+// ─────────────────────────────────────────────────────
+// #region BANK CONTEXT MENU
+// Right-click sel or cap button → dropdown with Clear + Colours
+// ─────────────────────────────────────────────────────
+(function () {
+    const menu    = document.getElementById('bankContextMenu');
+    const itmClear   = document.getElementById('bankCtxClear');
+    const itmColours = document.getElementById('bankCtxColours');
+    let _activeBankId  = null;
+    let _activeCapBtn  = null;
+
+    function showMenu(x, y, bankId, capBtn) {
+        _activeBankId = bankId;
+        _activeCapBtn = capBtn;
+        menu.style.left    = x + 'px';
+        menu.style.top     = y + 'px';
+        menu.style.display = 'block';
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        _activeBankId = null;
+        _activeCapBtn = null;
+    }
+
+    // Attach right-click to a bank's sel + cap buttons
+    function attachBankContextMenu(bankId, capBtn, selBtn) {
+        function onCtx(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showMenu(e.clientX, e.clientY, bankId, capBtn);
+        }
+        capBtn.addEventListener('contextmenu', onCtx);
+        selBtn.addEventListener('contextmenu', onCtx);
+    }
+
+    itmClear.addEventListener('click', () => {
+        if (!_activeBankId || !currentProjPath || !currentCompId) { hideMenu(); return; }
+        const fp = getSavePath(currentProjPath, currentCompId, _activeBankId);
+        if (fs.existsSync(fp)) fs.unlinkSync(fp);
+        refreshBankIndicators();
+        hideMenu();
+    });
+
+    itmColours.addEventListener('click', () => {
+        const bankId = _activeBankId;
+        const anchor = _activeCapBtn;
+        hideMenu();
+        if (bankId && anchor) openColorPicker(bankId, anchor);
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#bankContextMenu')) hideMenu();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') hideMenu();
+    });
+
+    // Expose so renderBankRow can wire up buttons after DOM build
+    window._attachBankContextMenu = attachBankContextMenu;
+}());
 // #endregion
 
 // ─────────────────────────────────────────────────────

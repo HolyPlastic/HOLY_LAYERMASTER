@@ -8,7 +8,7 @@ Three quick-action toggles on selected layers. Each has reverse logic: a second 
 ---
 
 ## Solo
-Toggles solo on selected layers. Reverse trigger: if all **visible** (non-shy-hidden) selected layers are already soloed → un-solos them. Shy-hidden layers excluded from the condition but action still applies to full selection (AE ignores them naturally).
+Toggles solo on selected layers. Reverse trigger: if all **visible** (non-shy-hidden) selected layers are already soloed → un-solos them. Shy-hidden layers excluded from both the condition check and the action — the solo toggle now applies only to visible layers to prevent AE errors on hidden layers.
 
 ## Shy Focus
 Three branches:
@@ -28,9 +28,9 @@ All selected locked → unlock all. Otherwise → lock all.
 ## Dev Log
 - 2024-07-29: Initial implementation of all three isolation buttons.
 - 2024-08-06: Added known bug notes — shy reverse tripped by hidden layers, states potentially same root cause.
+- 3. isolateSolo() now applies solo toggle only to visible layers — fixes AE error when shy-hidden layers are in the selection.
 
 ---
 
 ## Open Bugs
 - **Shy reverse tripped by hidden layers** — reverse logic fires incorrectly when shy-hidden layers are in the selection. Root cause under investigation. Possibly needs to filter out `shy && hideShyLayers` layers from the condition check (same pattern already applied in `isolateSolo`).
-- **Layer States not restoring correctly** — potentially the same hidden layer issue. See `docs/features/03-layer-states.md`.
