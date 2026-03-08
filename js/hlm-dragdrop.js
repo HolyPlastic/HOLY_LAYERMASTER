@@ -237,30 +237,24 @@ const HLMDragDrop = (function () {
             const handleSel  = _o.rowDragHandle  || '.sel-btn';
             const draggingCls = _o.rowDraggingClass || 'bank-dragging';
 
-            let _pendingRow = null;
-
-            // Gate: only make a row draggable when mousedown lands on the designated handle
-            container.addEventListener('mousedown', function (e) {
-                if (e.target.closest(handleSel)) {
-                    const row = e.target.closest(rowSel);
-                    if (row) { row.setAttribute('draggable', 'true'); _pendingRow = row; }
-                } else {
-                    if (_pendingRow) { _pendingRow.removeAttribute('draggable'); _pendingRow = null; }
-                }
-            });
-
-            // Remove draggable on mouseup so ordinary clicks continue to work normally
-            container.addEventListener('mouseup', function () {
-                var row = _pendingRow;
-                if (row) {
-                    setTimeout(function () { row.removeAttribute('draggable'); }, 50);
-                    _pendingRow = null;
-                }
-            });
+            // CEP/Chromium decides whether an element is draggable at mousedown time —
+            // before any JS event handlers run. Setting draggable="true" dynamically
+            // inside a mousedown handler is therefore too late and dragstart never fires.
+            // Fix: eagerly stamp draggable="true" on every handle now, and re-stamp
+            // whenever renderAll() replaces the container's children.
+            function _tagHandles() {
+                container.querySelectorAll(handleSel).forEach(function (h) {
+                    h.setAttribute('draggable', 'true');
+                });
+            }
+            _tagHandles();
+            new MutationObserver(_tagHandles).observe(container, { childList: true });
 
             container.addEventListener('dragstart', function (e) {
+                // Only honour drags that originate from the designated handle element
+                if (!e.target.closest(handleSel)) return;
                 const row = e.target.closest(rowSel);
-                if (!row || row !== _pendingRow) return;
+                if (!row) return;
 
                 const rows    = Array.from(container.querySelectorAll(rowSel));
                 const fromIdx = rows.indexOf(row);
@@ -318,8 +312,7 @@ const HLMDragDrop = (function () {
 
             container.addEventListener('dragend', function (e) {
                 const row = e.target && e.target.closest ? e.target.closest(rowSel) : null;
-                if (row) { row.classList.remove(draggingCls); row.removeAttribute('draggable'); }
-                if (_pendingRow) { _pendingRow.removeAttribute('draggable'); _pendingRow = null; }
+                if (row) row.classList.remove(draggingCls);
                 _hideIndicator();
                 if (_drag.rowType === rowType) {
                     _drag.type    = null;
