@@ -52,7 +52,7 @@
  *
  *   .section-header[draggable="true"]        { cursor: grab; }
  *   .section-header[draggable="true"]:active { cursor: grabbing; }
- *   .section-star                            { cursor: pointer; }   /* overrides grab on star */
+ *   .section-star                            { cursor: pointer; }   (overrides grab on star)
  *   .section-dragging                        { opacity: 0.4; transition: opacity 0.15s ease-in-out; }
  *   .sel-btn                                 { cursor: grab; }
  *   .sel-btn:active                          { cursor: grabbing; }
@@ -124,6 +124,7 @@ const HLMDragDrop = (function () {
             + 'width:' + el.offsetWidth + 'px;';
         document.body.appendChild(g);
         dataTransfer.setDragImage(g, offsetX, offsetY);
+        dataTransfer.setData('text/plain', '');   // required for DnD to proceed in CEP/Chromium
         dataTransfer.effectAllowed = 'move';
         setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, 0);
     }
@@ -330,6 +331,91 @@ const HLMDragDrop = (function () {
         });
     }
 
+    // ── Iso bar drag ──────────────────────────────────────────────────────────────────────────
+    function _initIsoDrag() {
+        const barId   = _o.isoBarId;
+        const btnSel  = _o.isoBtnSelector || '.iso-btn';
+        if (!barId) return;
+        const bar = document.getElementById(barId);
+        if (!bar) return;
+
+        if (!document.getElementById('hlm-iso-drag-style')) {
+            const s = document.createElement('style');
+            s.id = 'hlm-iso-drag-style';
+            s.textContent = '.iso-dragging{opacity:0.4;transition:opacity 0.15s ease-in-out;}';
+            document.head.appendChild(s);
+        }
+
+        let _pendingBtn = null;
+
+        bar.addEventListener('mousedown', function (e) {
+            const btn = e.target.closest(btnSel);
+            if (btn) { btn.setAttribute('draggable', 'true'); _pendingBtn = btn; }
+        });
+        bar.addEventListener('mouseup', function () {
+            var btn = _pendingBtn;
+            if (btn) { setTimeout(function () { btn.removeAttribute('draggable'); }, 50); _pendingBtn = null; }
+        });
+        bar.addEventListener('dragstart', function (e) {
+            const btn = e.target.closest(btnSel);
+            if (!btn || btn !== _pendingBtn) return;
+            const btns = Array.from(bar.querySelectorAll(btnSel));
+            _drag.type    = 'iso';
+            _drag.fromIdx = btns.indexOf(btn);
+            _ghost(btn, Math.round(btn.offsetWidth / 2), Math.round(btn.offsetHeight / 2), e.dataTransfer);
+            btn.classList.add('iso-dragging');
+        });
+        bar.addEventListener('dragover', function (e) {
+            if (_drag.type !== 'iso') return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const targetBtn = e.target.closest(btnSel);
+            if (!targetBtn) return;
+            const btns      = Array.from(bar.querySelectorAll(btnSel));
+            const targetIdx = btns.indexOf(targetBtn);
+            if (targetIdx < 0 || targetIdx === _drag.fromIdx) { _hideIndicator(); return; }
+            const rect = targetBtn.getBoundingClientRect();
+            const isVertical = bar.offsetHeight > bar.offsetWidth;
+            const insertBefore = isVertical
+                ? e.clientY < rect.top  + rect.height / 2
+                : e.clientX < rect.left + rect.width  / 2;
+            _drag.overIdx = targetIdx;
+            _showIndicator(rect, insertBefore);
+        });
+        bar.addEventListener('dragleave', function (e) {
+            if (_drag.type !== 'iso') return;
+            if (!bar.contains(e.relatedTarget)) _hideIndicator();
+        });
+        bar.addEventListener('drop', function (e) {
+            if (_drag.type !== 'iso') return;
+            e.preventDefault();
+            _hideIndicator();
+            const targetBtn = e.target.closest(btnSel);
+            if (!targetBtn) return;
+            const btns      = Array.from(bar.querySelectorAll(btnSel));
+            const targetIdx = btns.indexOf(targetBtn);
+            if (targetIdx < 0 || targetIdx === _drag.fromIdx) return;
+            const rect = targetBtn.getBoundingClientRect();
+            const isVertical = bar.offsetHeight > bar.offsetWidth;
+            const insertBefore = isVertical
+                ? e.clientY < rect.top  + rect.height / 2
+                : e.clientX < rect.left + rect.width  / 2;
+            const insertAt = _calcInsertAt(_drag.fromIdx, targetIdx, insertBefore);
+            const ordered = Array.from(bar.querySelectorAll(btnSel));
+            const moved = ordered.splice(_drag.fromIdx, 1)[0];
+            ordered.splice(insertAt, 0, moved);
+            ordered.forEach(function (b) { bar.appendChild(b); });
+            if (_o.onIsoDrop) _o.onIsoDrop(ordered.map(function (b) { return b.id; }));
+        });
+        bar.addEventListener('dragend', function (e) {
+            const btn = e.target && e.target.closest ? e.target.closest(btnSel) : null;
+            if (btn) { btn.classList.remove('iso-dragging'); btn.removeAttribute('draggable'); }
+            if (_pendingBtn) { _pendingBtn.removeAttribute('draggable'); _pendingBtn = null; }
+            _hideIndicator();
+            if (_drag.type === 'iso') { _drag.type = null; _drag.fromIdx = null; _drag.overIdx = null; }
+        });
+    }
+
     // ── Public API ───────────────────────────────────────────────────
     return {
 
@@ -356,6 +442,7 @@ const HLMDragDrop = (function () {
             _createIndicator();
             _initSectionDrag();
             _initRowDrag();
+            _initIsoDrag();
         },
 
         /**

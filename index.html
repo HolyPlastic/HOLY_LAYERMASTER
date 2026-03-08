@@ -79,8 +79,9 @@
             <span class="iso-label">SHY</span>
         </button>
         <button id="lockBtn" class="iso-btn" title="Lock selected layers">
-            <svg viewBox="0 0 10.04 10.04" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5.01,1.15l3.88,3.88-3.86,3.86-3.88-3.88,3.86-3.86M5.01,0c-.16,0-.33.06-.45.19L.19,4.56c-.25.25-.25.66,0,.91l4.38,4.38c.13.13.29.19.45.19s.33-.06.45-.19l4.37-4.37c.25-.25.25-.66,0-.91L5.47.19c-.13-.13-.29-.19-.45-.19h0Z"/>
+            <svg viewBox="0 0 10 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="5.5" width="8" height="6" rx="1"/>
+                <path d="M3 5.5V3.5a2 2 0 0 1 4 0v2"/>
             </svg>
             <span class="iso-label">LOCK</span>
         </button>
@@ -89,14 +90,11 @@
     ───────────────
     ─────────────────────────────────────────────── -->
 
-    <div id="sectionsContainer">
-
     <!-- ────────────────────────────────────────── -->
     <!-- #region 💾💾💾 KEYFRAME MEMORY
     ─────────────────────────────────────────────── -->
-    <div class="section-wrap" data-section-id="kf">
-    <div class="section-header" data-body-id="kfBody" draggable="true">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
+    <div class="section-header" data-body-id="kfBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">KF Memory</span>
@@ -119,7 +117,6 @@
             </button>
         </div>
     </div>
-    </div><!-- /section-wrap kf -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -127,9 +124,8 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🗂️🗂️🗂️ LAYER MEMORY
     ─────────────────────────────────────────────── -->
-    <div class="section-wrap" data-section-id="lay">
-    <div class="section-header" data-body-id="layBody" draggable="true">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
+    <div class="section-header" data-body-id="layBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Layer Memory</span>
@@ -150,7 +146,6 @@
             </button>
         </div>
     </div>
-    </div><!-- /section-wrap lay -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -158,9 +153,8 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 📷📷📷 LAYER STATES
     ─────────────────────────────────────────────── -->
-    <div class="section-wrap" data-section-id="states">
-    <div class="section-header" data-body-id="statesBody" draggable="true">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
+    <div class="section-header" data-body-id="statesBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Layer States</span>
@@ -200,7 +194,6 @@
             </button>
         </div>
     </div>
-    </div><!-- /section-wrap states -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -208,9 +201,8 @@
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🔍🔍🔍 SEARCH
     ─────────────────────────────────────────────── -->
-    <div class="section-wrap" data-section-id="search">
-    <div class="section-header" data-body-id="searchBody" draggable="true">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" draggable="false">
+    <div class="section-header" data-body-id="searchBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
         </svg>
         <span class="section-title">Search</span>
@@ -228,12 +220,9 @@
             <input type="text" placeholder="Name // Effect // Comment" id="searchInput" title="Search by name, effect, or comment">
         </div>
     </div>
-    </div><!-- /section-wrap search -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
-
-    </div><!-- /sectionsContainer -->
 
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🔁🔁🔁 SYSTEM

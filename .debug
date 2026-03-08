@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+    <Extension Id="com.holy.layer.master.panel">
+        <HostList>
+            <Host Name="AEFT" Port="6902"/>
+        </HostList>
+    </Extension>
+</ExtensionList>

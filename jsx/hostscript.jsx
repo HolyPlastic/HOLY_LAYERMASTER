@@ -522,3 +522,17 @@ function isolateLock() {
     app.endUndoGroup();
     app.executeCommand(app.findMenuCommandId("Reveal Selected Layer in Timeline"));
 }
+
+(function () {
+    function _dispatchContext() {
+        var ctx;
+        try { ctx = getProjectAndCompContext(); } catch (e) { return; }
+        var evt  = new CSXSEvent();
+        evt.type = 'com.hlm.contextChanged';
+        evt.data = ctx;
+        evt.dispatch();
+    }
+    try { app.addEventListener('afterActiveItemChanged', function () { _dispatchContext(); }); } catch (e) {}
+    try { app.project.addEventListener('afterItemAdded', function () { _dispatchContext(); }); } catch (e) {}
+    try { app.addEventListener('afterItemAdded', function () { _dispatchContext(); }); } catch (e) {}
+}());

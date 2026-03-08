@@ -213,8 +213,8 @@ body, html {
   flex-shrink: 0;
 }
 
-/* Solo + Shy icons slightly larger for legibility */
-#soloBtn svg, #shyBtn svg {
+/* All three iso icons at the same size */
+#soloBtn svg, #shyBtn svg, #lockBtn svg {
   width: 12px;
   height: 12px;
 }
@@ -823,75 +823,63 @@ button:hover {
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
-/* #region 🔀🔀🔀 19. DRAG AND DROP
-─────────────────────────────────────────────────── */
-/* Drop indicator is injected by hlm-dragdrop.js — no CSS needed here for it. */
-
-/* Section headers are drag handles — grab cursor on the title area */
-.section-header[draggable="true"] {
-  cursor: grab;
-}
-
-.section-header[draggable="true"]:active {
-  cursor: grabbing;
-}
-
-/* Star keeps its pointer cursor, overriding the grab from the parent header */
-.section-star {
-  cursor: pointer;
-}
-
-/* Dragged section wrap fades out at source */
-.section-wrap.section-dragging {
-  opacity: 0.4;
-  transition: opacity var(--transition);
-}
-
-/* Bank row fades at source during drag */
-.row.bank-dragging {
-  opacity: 0.4;
-  transition: opacity var(--transition);
-}
-
-/* Select button signals it is the bank drag handle */
-.sel-btn {
-  cursor: grab;
-}
-
-.sel-btn:active {
-  cursor: grabbing;
-}
-
-/* #endregion
-───────────────
-─────────────────────────────────────────────────── */
 /* #region 📱📱📱 18. NARROW / RESPONSIVE
 ─────────────────────────────────────────────────── */
 .narrow .isolation-bar {
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
 }
 
 .narrow .iso-btn {
-  height: 62px;
-  width: 100%;
+  width: 28px;
+  height: 28px;
   min-width: 0;
+  flex: none;
+  padding: 0;
   flex-direction: row;
-  gap: 8px;
 }
 
 .narrow .iso-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 .narrow .iso-label {
-  font-size: 8.5px;
-  letter-spacing: 1.2px;
+  display: none;
 }
 
 .narrow .section-title {
   letter-spacing: 0.06em;
+}
+
+/* Bank button stack — sel-btn and cap-btn grouped */
+.bank-btn-stack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* In narrow mode: sel on top, cap-btn beneath, short and wide */
+.narrow .bank-btn-stack {
+  flex-direction: column;
+  gap: 1px;
+}
+
+.narrow .bank-btn-stack .cap-btn {
+  width: 23px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.narrow .bank-btn-stack .cap-btn svg {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
 }
 
 .narrow #kfBanksContainer .row,

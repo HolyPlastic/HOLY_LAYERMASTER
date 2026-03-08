@@ -127,8 +127,7 @@ let currentProjPath = null;
 let currentCompId   = null;
 let currentCompName = null;
 let activeStateId   = 'State_1';
-
-// Drag state is managed internally by hlm-dragdrop.js
+// #endregion
 
 // ─────────────────────────────────────────────────────
 // #region HELPERS
@@ -171,8 +170,8 @@ function loadConfig(projPath) {
         try {
             const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
             // Backfill missing fields
-            if (!cfg.layStates)   cfg.layStates   = makeDefaultConfig().layStates;
-            if (!cfg.bankColors)  cfg.bankColors  = {};
+            if (!cfg.layStates)  cfg.layStates  = makeDefaultConfig().layStates;
+            if (!cfg.bankColors) cfg.bankColors  = {};
             if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search'];
 
             // Ensure every bank has iconIdx and a color
@@ -249,9 +248,14 @@ function renderBankRow(type, bank) {
         refreshBankIndicators();
     });
 
-    row.appendChild(selBtn);
+    // STACK: sel-btn on top, cap-btn beneath — narrow mode CSS handles the stacked layout
+    const stack = document.createElement('div');
+    stack.className = 'bank-btn-stack';
+    stack.appendChild(selBtn);
+    stack.appendChild(capBtn);
+
+    row.appendChild(stack);
     row.appendChild(nameInput);
-    row.appendChild(capBtn);
     row.appendChild(clrBtn);
     return row;
 }
@@ -266,11 +270,6 @@ function renderAll() {
     refreshBankIndicators();
     syncStatesUI();
 }
-// #endregion
-
-// ─────────────────────────────────────────────────────
-// #region DRAG AND DROP  (logic lives in hlm-dragdrop.js)
-// ─────────────────────────────────────────────────────
 // #endregion
 
 // ─────────────────────────────────────────────────────
@@ -492,55 +491,52 @@ function applyStateData() {
 // #endregion
 
 // ─────────────────────────────────────────────────────
-// #region POLLING LOOP
+// #region CONTEXT / EVENT-DRIVEN UPDATE
+// No polling. AE fires a CSXSEvent when project or active comp changes;
+// we sync once on boot, then react to those events only.
 // ─────────────────────────────────────────────────────
-let _lastPolledProjPath = null;
-let _lastPolledCompId   = null;
+let _lastKnownProjPath = null;
+let _lastKnownCompId   = null;
 
 function _applyContext(ctx) {
-    if (ctx.projPath !== 'UNSAVED' && ctx.projPath !== _lastPolledProjPath) {
-        _lastPolledProjPath = ctx.projPath;
-        currentProjPath     = ctx.projPath;
-        currentConfig       = loadConfig(ctx.projPath);
-        activeStateId = currentConfig.layStates.length > 0 ? currentConfig.layStates[0].id : null;
+    if (!ctx) return;
+    if (ctx.projPath && ctx.projPath !== 'UNSAVED' && ctx.projPath !== _lastKnownProjPath) {
+        _lastKnownProjPath = ctx.projPath;
+        currentProjPath    = ctx.projPath;
+        currentConfig      = loadConfig(ctx.projPath);
+        activeStateId      = currentConfig.layStates.length > 0 ? currentConfig.layStates[0].id : null;
         renderAll();
         HLMDragDrop.applyOrder(currentConfig.sectionOrder);
     }
-    if (ctx.compId !== _lastPolledCompId) {
-        _lastPolledCompId = ctx.compId;
-        currentCompId     = ctx.compId;
-        currentCompName   = ctx.compName;
+    if (ctx.compId !== _lastKnownCompId) {
+        _lastKnownCompId = ctx.compId;
+        currentCompId    = ctx.compId;
+        currentCompName  = ctx.compName;
         updateCompLabel(ctx.compName);
         refreshBankIndicators();
         refreshStateIndicator();
     }
 }
 
-function startPolling() {
-    let _interval = null;
-
-    const poll = () => {
+function startContextListener() {
+    function _fetchContext() {
         csInterface.evalScript('getProjectAndCompContext()', raw => {
             let ctx;
             try { ctx = JSON.parse(raw); } catch(e) { ctx = { projPath: 'UNSAVED', compId: null, compName: null }; }
             _applyContext(ctx);
+            // If we got UNSAVED on boot, retry after 2s in case AE wasn't ready
+            if (!ctx.projPath || ctx.projPath === 'UNSAVED') {
+                setTimeout(_fetchContext, 2000);
+            }
         });
-    };
-
-    const start = () => {
-        if (_interval) return;
-        poll();                              // immediate sync on focus restore
-        _interval = setInterval(poll, 1000);
-    };
-
-    const stop = () => {
-        clearInterval(_interval);
-        _interval = null;
-    };
-
-    window.addEventListener('focus', start);
-    window.addEventListener('blur',  stop);
-    start(); // initial poll + interval on load
+    }
+    _fetchContext();
+    // React to changes fired from hostscript.jsx — no timer, no cursor flicker
+    csInterface.addEventListener('com.hlm.contextChanged', event => {
+        let ctx;
+        try { ctx = JSON.parse(event.data); } catch(e) { return; }
+        _applyContext(ctx);
+    });
 }
 // #endregion
 
@@ -718,4 +714,4 @@ HLMDragDrop.init({
     },
 });
 HLMDragDrop.applyOrder(currentConfig.sectionOrder);
-startPolling();
+startContextListener();
