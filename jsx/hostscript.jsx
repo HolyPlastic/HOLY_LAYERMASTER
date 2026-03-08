@@ -338,10 +338,10 @@ function applyLayerStates(filePath, stateName) {
         if (records[r].instanceId) instanceMap[records[r].instanceId] = records[r];
     }
 
-    // Apply global comp flag
-    if (typeof data.hideShyLayers !== 'undefined') {
-        comp.hideShyLayers = data.hideShyLayers;
-    }
+    // Temporarily disable hideShyLayers so all layers remain accessible during apply.
+    // We restore (or set) the saved value after all layer properties are written.
+    var savedHideShy = comp.hideShyLayers;
+    comp.hideShyLayers = false;
 
     for (var i = 1; i <= comp.numLayers; i++) {
         var layer = comp.layer(i);
@@ -372,6 +372,9 @@ function applyLayerStates(filePath, stateName) {
             layer.locked  = (rec.locked !== undefined) ? rec.locked : wasLocked;
         }
     }
+
+    // Restore the saved hideShyLayers state (or revert to previous if not captured).
+    comp.hideShyLayers = (typeof data.hideShyLayers !== 'undefined') ? data.hideShyLayers : savedHideShy;
 
     app.endUndoGroup();
     return "SUCCESS";
@@ -415,6 +418,44 @@ function getAELabelData() {
 }
 
 // =======================
+// LAYER RENAME LOGIC
+// =======================
+
+// renameSelectedLayers: renames selected layers in the active comp.
+// mode: "search" | "prefix" | "suffix"
+// text1B64: search term (search mode) or the prefix/suffix text (other modes)
+// text2B64: replace term (search mode only)
+function renameSelectedLayers(mode, text1B64, text2B64) {
+    var comp = app.project.activeItem;
+    if (!comp || !(comp instanceof CompItem)) return "ERROR: Please open a composition.";
+
+    var selected = comp.selectedLayers;
+    if (!selected.length) return "ERROR: Please select at least one layer.";
+
+    var text1 = decodeURIComponent(escape(Base64.decode(text1B64)));
+    var text2 = (text2B64 && text2B64.length) ? decodeURIComponent(escape(Base64.decode(text2B64))) : "";
+
+    app.beginUndoGroup("Rename Selected Layers");
+
+    for (var i = 0; i < selected.length; i++) {
+        var name = selected[i].name;
+        if (mode === "search") {
+            // Global search-and-replace
+            if (text1.length) {
+                selected[i].name = name.split(text1).join(text2);
+            }
+        } else if (mode === "prefix") {
+            selected[i].name = text1 + name;
+        } else if (mode === "suffix") {
+            selected[i].name = name + text1;
+        }
+    }
+
+    app.endUndoGroup();
+    return "SUCCESS";
+}
+
+// =======================
 // ISOLATION MODE
 // =======================
 
@@ -446,9 +487,9 @@ function isolateSolo() {
         if (!visible[j].solo) { allSolo = false; break; }
     }
 
-    // Apply to full selection; hidden layers won't respond — that's AE's natural behaviour.
-    for (var k = 0; k < selected.length; k++) {
-        selected[k].solo = !allSolo;
+    // Apply only to visible layers; shy-hidden layers cannot be soloed by AE.
+    for (var k = 0; k < visible.length; k++) {
+        visible[k].solo = !allSolo;
     }
 
     app.endUndoGroup();

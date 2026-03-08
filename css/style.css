@@ -802,6 +802,97 @@ button:hover {
 /* #endregion
 ───────────────
 ─────────────────────────────────────────────────── */
+/* #region ✏️✏️✏️ 19. LAYER RENAME
+─────────────────────────────────────────────────── */
+.rename-modes {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.rename-mode-btn {
+  flex: 1;
+  height: 16px;
+  width: auto;
+  font-size: 7px;
+  letter-spacing: 1px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-faint);
+  border-radius: var(--radius-sm);
+  padding: 0;
+}
+
+.rename-mode-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.rename-mode-btn.rename-mode-active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.rename-fire-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+}
+
+.rename-fire-btn:hover {
+  opacity: 0.82;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
+/* #region 🎯🎯🎯 20. BANK CONTEXT MENU
+─────────────────────────────────────────────────── */
+.bank-ctx-menu {
+  position: fixed;
+  z-index: 1002;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  min-width: 72px;
+  overflow: hidden;
+}
+
+.bank-ctx-item {
+  padding: 5px 10px;
+  font-size: 8.5px;
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition), color var(--transition);
+}
+
+.bank-ctx-item:last-child {
+  border-bottom: none;
+}
+
+.bank-ctx-item:hover {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+.bank-ctx-item.ctx-danger:hover {
+  background: rgba(255, 77, 77, 0.12);
+  color: var(--danger);
+}
+
+/* #endregion
+───────────────
+─────────────────────────────────────────────────── */
 /* #region 📜📜📜 16. SCROLLBARS
 ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; height: 4px; }
