@@ -1,0 +1,48 @@
+Folder PATH listing
+Volume serial number is 0A04-57E4
+C:.
+|   .debug
+|   .gitattributes
+|   CLAUDE.md
+|   Holy_LayerNames.jsx
+|   index.html
+|   structure.txt
+|   x_generate_structure.bat
+|   
++---css
+|       style.css
+|       
++---CSXS
+|       manifest.xml
+|       
++---Docs
+|   |   ARCHITECTURE.md
+|   |   CODE_STYLE.md
+|   |   ROADMAP.md
+|   |   
+|   \---features
+|           01-isolation-rail.md
+|           02-memory-banks.md
+|           03-layer-states.md
+|           04-search.md
+|           05-color-picker.md
+|           06-persistence.md
+|           07-context-listener.md
+|           08-drag-drop.md
+|           09-11-ui-details.md
+|           10-layer-rename.md
+|           
++---js
+|       colorpicker.js
+|       CSInterface.js
+|       hlm-dragdrop.js
+|       main.js
+|       
++---jsx
+|       hostscript.jsx
+|       
+\---PROJECT_DOCUMENTS
+        DEV LOG.md
+        HOLY PLASTIC AGENT BRAND BOOK.md
+        PLUGIN SPEC.md
+        

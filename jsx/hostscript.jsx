@@ -40,6 +40,124 @@ function findLayerByTag(comp, bankId, instanceId) {
 }
 
 // =======================
+// FILE I/O HELPERS
+// These replace all Node.js fs/path calls in main.js.
+// All paths are built here in JSX using ExtendScript's File/Folder API.
+// =======================
+
+// Returns the _HLM_Data folder path next to the project file
+function hlm_getDataDir(projPath) {
+    var projFile = new File(projPath);
+    return projFile.parent.fsName + "/_HLM_Data";
+}
+
+// Returns the full path for a bank's JSON file
+function hlm_getSavePath(projPath, compId, bankId) {
+    return hlm_getDataDir(projPath) + "/" + compId + "_" + bankId + ".json";
+}
+
+// Returns the full path for the bank config file
+function hlm_getConfigPath(projPath) {
+    return hlm_getDataDir(projPath) + "/_bankConfig.json";
+}
+
+// Creates the _HLM_Data folder if it doesn't exist. Returns "OK" or "ERROR: ..."
+function hlm_ensureDataDir(projPath) {
+    var dir = new Folder(hlm_getDataDir(projPath));
+    if (!dir.exists) {
+        if (!dir.create()) return "ERROR: Could not create data folder.";
+    }
+    return "OK";
+}
+
+// Returns "true" or "false" as a string — used to check if a file exists
+function hlm_fileExists(filePath) {
+    return (new File(filePath)).exists ? "true" : "false";
+}
+
+// Reads a file and returns its contents as a string.
+// Returns "ERROR: ..." on failure.
+function hlm_readFile(filePath) {
+    var f = new File(filePath);
+    if (!f.exists) return "ERROR: File not found: " + filePath;
+    f.encoding = "UTF-8";
+    f.open("r");
+    var content = f.read();
+    f.close();
+    return content;
+}
+
+// Writes data (a string) to a file, creating it if needed.
+// Returns "OK" or "ERROR: ..."
+function hlm_writeFile(filePath, data) {
+    var ensureResult = hlm_ensureDataDir(new File(filePath).parent.fsName + "/..");
+    // ensureDataDir already handles the parent — we just need the file's direct parent
+    var parentFolder = new File(filePath).parent;
+    if (!parentFolder.exists) {
+        if (!parentFolder.create()) return "ERROR: Could not create folder: " + parentFolder.fsName;
+    }
+    var f = new File(filePath);
+    f.encoding = "UTF-8";
+    if (!f.open("w")) return "ERROR: Could not open file for writing: " + filePath;
+    f.write(data);
+    f.close();
+    return "OK";
+}
+
+// Deletes a file. Returns "OK" or "ERROR: ..."
+function hlm_deleteFile(filePath) {
+    var f = new File(filePath);
+    if (!f.exists) return "OK"; // already gone — not an error
+    return f.remove() ? "OK" : "ERROR: Could not delete file: " + filePath;
+}
+
+// Reads the bank config file and returns its JSON string.
+// Returns "NOT_FOUND" if it doesn't exist, "ERROR: ..." on failure.
+function hlm_readConfig(projPath) {
+    var cfgPath = hlm_getConfigPath(projPath);
+    var f = new File(cfgPath);
+    if (!f.exists) return "NOT_FOUND";
+    f.encoding = "UTF-8";
+    f.open("r");
+    var content = f.read();
+    f.close();
+    return content;
+}
+
+// Writes the bank config JSON string to disk.
+// Returns "OK" or "ERROR: ..."
+function hlm_writeConfig(projPath, jsonStr) {
+    var ensureResult = hlm_ensureDataDir(projPath);
+    if (ensureResult !== "OK") return ensureResult;
+    var cfgPath = hlm_getConfigPath(projPath);
+    var f = new File(cfgPath);
+    f.encoding = "UTF-8";
+    if (!f.open("w")) return "ERROR: Could not open config for writing.";
+    f.write(jsonStr);
+    f.close();
+    return "OK";
+}
+
+// Reads a bank data file and returns a count of items inside it (layers/keyframes/ids).
+// Returns the count as a plain number string, e.g. "3", or "0" if empty/missing.
+function hlm_getBankCount(projPath, compId, bankId) {
+    var fp = hlm_getSavePath(projPath, compId, bankId);
+    var f = new File(fp);
+    if (!f.exists) return "0";
+    f.encoding = "UTF-8";
+    f.open("r");
+    var raw = f.read();
+    f.close();
+    try {
+        var data = JSON.parse(raw);
+        if (data.layers)    return String(data.layers.length);
+        if (data.ids)       return String(data.ids.length);
+        if (data.keyframes) return String(data.keyframes.length);
+    } catch(e) {}
+    return "0";
+}
+
+// =======================
 // LAYER LOGIC
 // =======================
 function captureLayers(bankId, timestamp) {

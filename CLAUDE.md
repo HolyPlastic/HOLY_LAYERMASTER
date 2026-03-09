@@ -12,6 +12,8 @@
 - No rounded corners (`border-radius: 0px` everywhere).
 - All colours in `:root` as `var(--hlm-*)` tokens. No inline hex in classes.
 - Region markers required in all HTML/CSS files — see `docs/CODE_STYLE.md`.
+- - **Never add `/* */` comments inside JSDoc block comments** in any `.js` file — nested block comments cause a `SyntaxError` that silently kills the entire module.
+- **When adding a new section to `index.html`**, it must be wrapped in `<div data-section-id="yourKey">` inside `<div id="sectionsContainer">`, and `'yourKey'` must be added to `sectionOrder` in both `makeDefaultConfig()` and the `loadConfig()` backfill in `main.js`. See `docs/features/08-drag-drop.md`.
 
 ## Docs Map
 Read only what the task needs:

@@ -1,6 +1,4 @@
 const csInterface = new CSInterface();
-const fs   = require('fs');
-const path = require('path');
 
 // ─────────────────────────────────────────────────────
 // #region BANK ICON POOL
@@ -72,20 +70,17 @@ const SVG = {
 // #endregion
 
 // ─────────────────────────────────────────────────────
-// #region STORAGE SETUP
+// #region STORAGE PATH HELPERS
+// Path strings are built in JSX (hlm_getSavePath etc.) — these JS helpers
+// just format the evalScript call strings so call-sites stay readable.
 // ─────────────────────────────────────────────────────
-function getDataDir(projPath) {
-    return path.join(path.dirname(projPath), '_HLM_Data');
+function _jsxPath(projPath, compId, bankId) {
+    // Returns the evalScript expression that resolves to the save path string
+    return `hlm_getSavePath("${_esc(projPath)}", "${compId}", "${bankId}")`;
 }
-function getSavePath(projPath, compId, bankId) {
-    return path.join(getDataDir(projPath), `${compId}_${bankId}.json`);
-}
-function getConfigPath(projPath) {
-    return path.join(getDataDir(projPath), '_bankConfig.json');
-}
-function ensureDataDir(projPath) {
-    const dir = getDataDir(projPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+// Escape backslashes for embedding in an evalScript string literal
+function _esc(str) {
+    return str.replace(/\\/g, '\\\\');
 }
 // #endregion
 
@@ -163,37 +158,43 @@ function openColorPicker(bankId, anchorEl) {
 
 // ─────────────────────────────────────────────────────
 // #region CONFIG PERSISTENCE
+// loadConfig is now async — pass a callback that receives the config object.
+// saveConfig is fire-and-forget (no callback needed).
 // ─────────────────────────────────────────────────────
-function loadConfig(projPath) {
-    const cfgPath = getConfigPath(projPath);
-    if (fs.existsSync(cfgPath)) {
+function loadConfig(projPath, cb) {
+    csInterface.evalScript(`hlm_readConfig("${_esc(projPath)}")`, raw => {
+        if (!raw || raw === 'NOT_FOUND' || raw.indexOf('ERROR') === 0) {
+            console.log('[HLM] loadConfig: no config found, using defaults.');
+            cb(makeDefaultConfig());
+            return;
+        }
         try {
-            const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+            const cfg = JSON.parse(raw);
             // Backfill missing fields
-            if (!cfg.layStates)  cfg.layStates  = makeDefaultConfig().layStates;
-            if (!cfg.bankColors) cfg.bankColors  = {};
+            if (!cfg.layStates)    cfg.layStates    = makeDefaultConfig().layStates;
+            if (!cfg.bankColors)   cfg.bankColors   = {};
             if (!cfg.sectionOrder) cfg.sectionOrder = ['kf', 'lay', 'states', 'search', 'rename'];
 
             // Ensure every bank has iconIdx and a color
             const allBanks = [...cfg.kfBanks, ...cfg.layBanks];
             allBanks.forEach((bank, i) => {
-                if (bank.iconIdx === undefined) {
-                    bank.iconIdx = i % BANK_ICONS.length;
-                }
-                if (!cfg.bankColors[bank.id]) {
-                    cfg.bankColors[bank.id] = BANK_PALETTE[i % BANK_PALETTE.length];
-                }
+                if (bank.iconIdx === undefined) bank.iconIdx = i % BANK_ICONS.length;
+                if (!cfg.bankColors[bank.id])   cfg.bankColors[bank.id] = BANK_PALETTE[i % BANK_PALETTE.length];
             });
-            return cfg;
-        } catch (e) {}
-    }
-    return makeDefaultConfig();
+            cb(cfg);
+        } catch(e) {
+            console.error('[HLM] loadConfig parse error:', e);
+            cb(makeDefaultConfig());
+        }
+    });
 }
 
 function saveConfig() {
     if (!currentProjPath) return;
-    ensureDataDir(currentProjPath);
-    fs.writeFileSync(getConfigPath(currentProjPath), JSON.stringify(currentConfig), 'utf8');
+    const jsonStr = JSON.stringify(currentConfig).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    csInterface.evalScript(`hlm_writeConfig("${_esc(currentProjPath)}", "${jsonStr}")`, result => {
+        if (result && result.indexOf('ERROR') === 0) console.error('[HLM] saveConfig failed:', result);
+    });
 }
 // #endregion
 
@@ -242,9 +243,9 @@ function renderBankRow(type, bank) {
     clrBtn.title = 'Clear this bank for the current comp';
     clrBtn.addEventListener('click', () => {
         if (!currentProjPath || !currentCompId) return;
-        const fp = getSavePath(currentProjPath, currentCompId, bank.id);
-        if (fs.existsSync(fp)) fs.unlinkSync(fp);
-        refreshBankIndicators();
+        csInterface.evalScript(`hlm_deleteFile(${_jsxPath(currentProjPath, currentCompId, bank.id)})`, () => {
+            refreshBankIndicators();
+        });
     });
 
     // STACK: sel-btn on top, cap-btn beneath — narrow mode CSS handles the stacked layout
@@ -326,21 +327,9 @@ function updateCompLabel(name) {
 
 // ─────────────────────────────────────────────────────
 // #region BANK INDICATORS
-// Select button — always solid with bank color
-// Capture button — theme-colored border/icon if has data; plain if empty
+// refreshBankIndicators is now async — it fires N evalScript calls (one per bank)
+// and updates each button individually as results arrive.
 // ─────────────────────────────────────────────────────
-function getBankCount(projPath, compId, bankId) {
-    try {
-        const fp = getSavePath(projPath, compId, bankId);
-        if (!fs.existsSync(fp)) return 0;
-        const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
-        if (data.layers)    return data.layers.length;
-        if (data.ids)       return data.ids.length;
-        if (data.keyframes) return data.keyframes.length;
-    } catch(e) {}
-    return 0;
-}
-
 function refreshBankIndicators() {
     [...currentConfig.kfBanks, ...currentConfig.layBanks].forEach(bank => {
         const { id } = bank;
@@ -348,31 +337,43 @@ function refreshBankIndicators() {
         const selBtn = document.getElementById(`sel_${id}`);
         if (!capBtn || !selBtn) return;
 
-        const count   = (currentProjPath && currentCompId) ? getBankCount(currentProjPath, currentCompId, id) : 0;
-        const hasData = count > 0;
-        const color   = getBankColor(id);
+        const color = getBankColor(id);
 
-        // SELECT: always fully colored with bank's theme color
+        // SELECT: always fully colored with bank's theme color (no async needed)
         selBtn.style.backgroundColor = color;
         selBtn.style.borderColor     = color;
         selBtn.style.color           = '#0d0d0f';
 
-        // CAPTURE: outline + icon in theme color when data exists; plain when empty
-        capBtn.classList.toggle('cap-active', hasData);
-        if (hasData) {
-            capBtn.style.backgroundColor = 'transparent';
-            capBtn.style.borderColor     = color;
-            capBtn.style.color           = color;
-        } else {
-            capBtn.style.backgroundColor = '';
-            capBtn.style.borderColor     = '';
-            capBtn.style.color           = '';
+        if (!currentProjPath || !currentCompId) {
+            // No project open — clear indicators without an evalScript round-trip
+            _applyCapBtnState(capBtn, false, 0, color);
+            return;
         }
 
-        // Tooltip
-        const base = capBtn.dataset.baseTitle || '';
-        capBtn.title = hasData ? `${base} (${count} saved)` : base;
+        csInterface.evalScript(
+            `hlm_getBankCount("${_esc(currentProjPath)}", "${currentCompId}", "${id}")`,
+            countStr => {
+                const count   = parseInt(countStr, 10) || 0;
+                const hasData = count > 0;
+                _applyCapBtnState(capBtn, hasData, count, color);
+            }
+        );
     });
+}
+
+function _applyCapBtnState(capBtn, hasData, count, color) {
+    capBtn.classList.toggle('cap-active', hasData);
+    if (hasData) {
+        capBtn.style.backgroundColor = 'transparent';
+        capBtn.style.borderColor     = color;
+        capBtn.style.color           = color;
+    } else {
+        capBtn.style.backgroundColor = '';
+        capBtn.style.borderColor     = '';
+        capBtn.style.color           = '';
+    }
+    const base = capBtn.dataset.baseTitle || '';
+    capBtn.title = hasData ? `${base} (${count} saved)` : base;
 }
 // #endregion
 
@@ -434,14 +435,25 @@ function addState() {
     refreshStateIndicator();
 }
 
+// refreshStateIndicator is async — asks JSX whether the state file exists
 function refreshStateIndicator() {
     const btn = document.getElementById('captureStateBtn');
     if (!btn) return;
-    const hasData = !!(
-        currentProjPath && currentProjPath !== 'UNSAVED' &&
-        currentCompId && activeStateId &&
-        fs.existsSync(getSavePath(currentProjPath, currentCompId, activeStateId))
+
+    if (!currentProjPath || currentProjPath === 'UNSAVED' || !currentCompId || !activeStateId) {
+        _applyStateBtnState(btn, false);
+        return;
+    }
+
+    csInterface.evalScript(
+        `hlm_fileExists(${_jsxPath(currentProjPath, currentCompId, activeStateId)})`,
+        result => {
+            _applyStateBtnState(btn, result === 'true');
+        }
     );
+}
+
+function _applyStateBtnState(btn, hasData) {
     btn.classList.toggle('cap-active', hasData);
     if (activeStateId) {
         const color = getBankColor(activeStateId);
@@ -465,12 +477,22 @@ function captureStateData() {
     if (!activeStateId)
         return alert('No active state selected.');
 
-    ensureDataDir(currentProjPath);
-    const timestamp = Date.now();
-    csInterface.evalScript(`captureLayerStates("${activeStateId}", ${timestamp})`, aeDataStr => {
+    const timestamp  = Date.now();
+    const projPath   = currentProjPath;
+    const compId     = currentCompId;
+    const stateId    = activeStateId;
+
+    csInterface.evalScript(`captureLayerStates("${stateId}", ${timestamp})`, aeDataStr => {
         if (aeDataStr.indexOf('ERROR') !== -1) return alert(aeDataStr);
-        fs.writeFileSync(getSavePath(currentProjPath, currentCompId, activeStateId), aeDataStr, 'utf8');
-        refreshStateIndicator();
+        // Escape the JSON payload for embedding in an evalScript string
+        const safeData = aeDataStr.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        csInterface.evalScript(
+            `hlm_writeFile(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${stateId}"), "${safeData}")`,
+            result => {
+                if (result && result.indexOf('ERROR') === 0) console.error('[HLM] captureStateData write error:', result);
+                refreshStateIndicator();
+            }
+        );
     });
 }
 
@@ -482,15 +504,25 @@ function applyStateData() {
     if (!activeStateId)
         return alert('No active state selected.');
 
-    const filePath = getSavePath(currentProjPath, currentCompId, activeStateId);
-    if (!fs.existsSync(filePath)) return alert('This state is empty — capture it first.');
+    const projPath = currentProjPath;
+    const compId   = currentCompId;
+    const stateId  = activeStateId;
 
-    const state      = currentConfig.layStates.find(s => s.id === activeStateId);
-    const stateName  = state ? state.name : activeStateId;
-    const safeFilePath = filePath.replace(/\\/g, '\\\\');
-    csInterface.evalScript(`applyLayerStates("${safeFilePath}", "${stateName}")`, result => {
-        if (result && result.indexOf('ERROR') !== -1) alert(result);
-    });
+    csInterface.evalScript(
+        `hlm_fileExists(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${stateId}"))`,
+        existsResult => {
+            if (existsResult !== 'true') return alert('This state is empty — capture it first.');
+            const state      = currentConfig.layStates.find(s => s.id === stateId);
+            const stateName  = state ? state.name : stateId;
+            const safeStateName = stateName.replace(/"/g, '\\"');
+            csInterface.evalScript(
+                `applyLayerStates(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${stateId}"), "${safeStateName}")`,
+                result => {
+                    if (result && result.indexOf('ERROR') !== -1) alert(result);
+                }
+            );
+        }
+    );
 }
 // #endregion
 
@@ -507,10 +539,17 @@ function _applyContext(ctx) {
     if (ctx.projPath && ctx.projPath !== 'UNSAVED' && ctx.projPath !== _lastKnownProjPath) {
         _lastKnownProjPath = ctx.projPath;
         currentProjPath    = ctx.projPath;
-        currentConfig      = loadConfig(ctx.projPath);
-        activeStateId      = currentConfig.layStates.length > 0 ? currentConfig.layStates[0].id : null;
+        // loadConfig is now async — everything that depends on config goes in the callback
+        loadConfig(ctx.projPath, cfg => {
+            currentConfig = cfg;
+            activeStateId = cfg.layStates.length > 0 ? cfg.layStates[0].id : null;
+            renderAll();
+            HLMDragDrop.applyOrder(currentConfig.sectionOrder);
+        });
+    } else if (!_lastKnownProjPath && (!ctx.projPath || ctx.projPath === 'UNSAVED')) {
+        // First context response with no saved project — render defaults
+        _lastKnownProjPath = 'UNSAVED';
         renderAll();
-        HLMDragDrop.applyOrder(currentConfig.sectionOrder);
     }
     if (ctx.compId !== _lastKnownCompId) {
         _lastKnownCompId = ctx.compId;
@@ -553,7 +592,8 @@ function captureData(type, bankId) {
     if (!currentCompId)
         return alert('Please open a composition first.');
 
-    ensureDataDir(currentProjPath);
+    const projPath = currentProjPath;
+    const compId   = currentCompId;
     const timestamp  = Date.now();
     const scriptCall = type === 'lay'
         ? `captureLayers("${bankId}", ${timestamp})`
@@ -561,8 +601,14 @@ function captureData(type, bankId) {
 
     csInterface.evalScript(scriptCall, aeDataStr => {
         if (aeDataStr.indexOf('ERROR') !== -1) return alert(aeDataStr);
-        fs.writeFileSync(getSavePath(currentProjPath, currentCompId, bankId), aeDataStr, 'utf8');
-        refreshBankIndicators();
+        const safeData = aeDataStr.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        csInterface.evalScript(
+            `hlm_writeFile(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${bankId}"), "${safeData}")`,
+            result => {
+                if (result && result.indexOf('ERROR') === 0) console.error('[HLM] captureData write error:', result);
+                refreshBankIndicators();
+            }
+        );
     });
 }
 
@@ -572,16 +618,23 @@ function selectData(type, bankId, labelId) {
     if (!currentCompId)
         return alert('Please open a composition first.');
 
-    const filePath = getSavePath(currentProjPath, currentCompId, bankId);
-    if (!fs.existsSync(filePath)) return alert('This memory bank is currently empty.');
-    const bankName     = document.getElementById(labelId).value;
-    const safeFilePath = filePath.replace(/\\/g, '\\\\');
-    const scriptCall   = type === 'lay'
-        ? `selectLayersFromFile("${safeFilePath}", "${bankName}")`
-        : `selectKeyframesFromFile("${safeFilePath}", "${bankName}")`;
-    csInterface.evalScript(scriptCall, result => {
-        if (result && result.indexOf('ERROR') !== -1) alert(result);
-    });
+    const projPath = currentProjPath;
+    const compId   = currentCompId;
+
+    csInterface.evalScript(
+        `hlm_fileExists(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${bankId}"))`,
+        existsResult => {
+            if (existsResult !== 'true') return alert('This memory bank is currently empty.');
+            const bankName      = document.getElementById(labelId).value;
+            const safeBankName  = bankName.replace(/"/g, '\\"');
+            const scriptCall    = type === 'lay'
+                ? `selectLayersFromFile(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${bankId}"), "${safeBankName}")`
+                : `selectKeyframesFromFile(hlm_getSavePath("${_esc(projPath)}", "${compId}", "${bankId}"), "${safeBankName}")`;
+            csInterface.evalScript(scriptCall, result => {
+                if (result && result.indexOf('ERROR') !== -1) alert(result);
+            });
+        }
+    );
 }
 // #endregion
 
@@ -639,11 +692,11 @@ function selectData(type, bankId, labelId) {
 // Right-click sel or cap button → dropdown with Clear + Colours
 // ─────────────────────────────────────────────────────
 (function () {
-    const menu    = document.getElementById('bankContextMenu');
+    const menu       = document.getElementById('bankContextMenu');
     const itmClear   = document.getElementById('bankCtxClear');
     const itmColours = document.getElementById('bankCtxColours');
-    let _activeBankId  = null;
-    let _activeCapBtn  = null;
+    let _activeBankId = null;
+    let _activeCapBtn = null;
 
     function showMenu(x, y, bankId, capBtn) {
         _activeBankId = bankId;
@@ -672,10 +725,13 @@ function selectData(type, bankId, labelId) {
 
     itmClear.addEventListener('click', () => {
         if (!_activeBankId || !currentProjPath || !currentCompId) { hideMenu(); return; }
-        const fp = getSavePath(currentProjPath, currentCompId, _activeBankId);
-        if (fs.existsSync(fp)) fs.unlinkSync(fp);
-        refreshBankIndicators();
-        hideMenu();
+        csInterface.evalScript(
+            `hlm_deleteFile(${_jsxPath(currentProjPath, currentCompId, _activeBankId)})`,
+            () => {
+                refreshBankIndicators();
+                hideMenu();
+            }
+        );
     });
 
     itmColours.addEventListener('click', () => {
@@ -726,9 +782,10 @@ document.getElementById('applyStateBtn').addEventListener('click', applyStateDat
 // Clear active state data
 document.getElementById('clearStateBtn').addEventListener('click', () => {
     if (!currentProjPath || !currentCompId || !activeStateId) return;
-    const fp = getSavePath(currentProjPath, currentCompId, activeStateId);
-    if (fs.existsSync(fp)) fs.unlinkSync(fp);
-    refreshStateIndicator();
+    csInterface.evalScript(
+        `hlm_deleteFile(${_jsxPath(currentProjPath, currentCompId, activeStateId)})`,
+        () => refreshStateIndicator()
+    );
 });
 
 document.getElementById('stateNameInput').addEventListener('input', () => {
@@ -791,43 +848,50 @@ document.querySelectorAll('.section-star').forEach(star => {
 // ─────────────────────────────────────────────────────
 // Boot
 // ─────────────────────────────────────────────────────
-HLMColorPicker.init({
-    fetchSwatches: function (cb) { fetchAELabels(cb); },
-    onApply: function (targetId, hex) {
-        currentConfig.bankColors[targetId] = hex;
-        saveConfig();
-        refreshBankIndicators();
-        refreshStateIndicator();
-    },
-    onReset: function (targetId) {
-        delete currentConfig.bankColors[targetId];
-        const allBanks = [...currentConfig.kfBanks, ...currentConfig.layBanks];
-        const idx = allBanks.findIndex(b => b.id === targetId);
-        if (idx >= 0) currentConfig.bankColors[targetId] = BANK_PALETTE[idx % BANK_PALETTE.length];
-        saveConfig();
-        refreshBankIndicators();
-        refreshStateIndicator();
-    }
-});
-renderAll();
-HLMDragDrop.init({
-    sectionsContainerId : 'sectionsContainer',
-    sectionIdAttr       : 'data-section-id',
-    getOrder            : () => currentConfig.sectionOrder,
-    onSectionDrop       : function (newOrder) {
-        currentConfig.sectionOrder = newOrder;
-        saveConfig();
-    },
-    rowContainers : [
-        { containerId: 'kfBanksContainer',  type: 'kf'  },
-        { containerId: 'layBanksContainer', type: 'lay' },
-    ],
-    onRowDrop : function (type, fromIdx, insertAt) {
-        const banks = type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks;
-        banks.splice(insertAt, 0, banks.splice(fromIdx, 1)[0]);
-        saveConfig();
-        renderAll();
-    },
-});
-HLMDragDrop.applyOrder(currentConfig.sectionOrder);
+try {
+    HLMColorPicker.init({
+        fetchSwatches: function (cb) { fetchAELabels(cb); },
+        onApply: function (targetId, hex) {
+            currentConfig.bankColors[targetId] = hex;
+            saveConfig();
+            refreshBankIndicators();
+            refreshStateIndicator();
+        },
+        onReset: function (targetId) {
+            delete currentConfig.bankColors[targetId];
+            const allBanks = [...currentConfig.kfBanks, ...currentConfig.layBanks];
+            const idx = allBanks.findIndex(b => b.id === targetId);
+            if (idx >= 0) currentConfig.bankColors[targetId] = BANK_PALETTE[idx % BANK_PALETTE.length];
+            saveConfig();
+            refreshBankIndicators();
+            refreshStateIndicator();
+        }
+    });
+} catch(e) { console.error('[HLM] HLMColorPicker.init error:', e); }
+
+try { renderAll(); } catch(e) { console.error('[HLM] Boot renderAll error:', e); }
+
+try {
+    HLMDragDrop.init({
+        sectionsContainerId : 'sectionsContainer',
+        sectionIdAttr       : 'data-section-id',
+        getOrder            : () => currentConfig.sectionOrder,
+        onSectionDrop       : function (newOrder) {
+            currentConfig.sectionOrder = newOrder;
+            saveConfig();
+        },
+        rowContainers : [
+            { containerId: 'kfBanksContainer',  type: 'kf'  },
+            { containerId: 'layBanksContainer', type: 'lay' },
+        ],
+        onRowDrop : function (type, fromIdx, insertAt) {
+            const banks = type === 'kf' ? currentConfig.kfBanks : currentConfig.layBanks;
+            banks.splice(insertAt, 0, banks.splice(fromIdx, 1)[0]);
+            saveConfig();
+            renderAll();
+        },
+    });
+    HLMDragDrop.applyOrder(currentConfig.sectionOrder);
+} catch(e) { console.error('[HLM] HLMDragDrop.init error:', e); }
+
 startContextListener();
