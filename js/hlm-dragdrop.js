@@ -146,7 +146,7 @@ const HLMDragDrop = (function () {
         });
     }
 
-    // ── Section drag ─────────────────────────────────────────────────
+ // ── Section drag ─────────────────────────────────────────────────
     function _initSectionDrag() {
         const container = document.getElementById(_o.sectionsContainerId);
         if (!container) return;
@@ -155,7 +155,29 @@ const HLMDragDrop = (function () {
         const headerSel    = _o.sectionHeaderSelector || '.section-header';
         const draggingCls  = _o.sectionDraggingClass  || 'section-dragging';
 
+        // Eagerly stamp draggable="true" on section headers
+        function _tagSectionHeaders() {
+            container.querySelectorAll(headerSel).forEach(function (h) {
+                h.setAttribute('draggable', 'true');
+                
+                // Explicitly disable dragging on the star to prevent browser UX glitches
+                // when clicking inside a draggable parent container.
+                const star = h.querySelector('.section-star');
+                if (star) star.setAttribute('draggable', 'false');
+            });
+        }
+        
+        // Tag initially and observe for newly added sections
+        _tagSectionHeaders();
+        new MutationObserver(_tagSectionHeaders).observe(container, { childList: true });
+
         container.addEventListener('dragstart', function (e) {
+            // Prevent dragging if the user is interacting with the section star
+            if (e.target.closest('.section-star')) {
+                e.preventDefault();
+                return;
+            }
+
             const header = e.target.closest(headerSel);
             if (!header) return;
             const wrap = header.closest(wrapSel);
