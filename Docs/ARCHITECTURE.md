@@ -81,5 +81,6 @@ _HLM_Data/
 ---
 
 ## Dev Log
-- 2024-07-29: Initial architecture documented.
-- 2024-08-06: Added DNA limitations (clone multiplier, cross-contamination, pre-comp keyframe break, user destruction). Added locked layer handling section.
+- 1: Initial architecture documented.
+- 2: Added DNA limitations (clone multiplier, cross-contamination, pre-comp keyframe break, user destruction). Added locked layer handling section.
+- 3: File I/O moved from Node.js fs module in main.js to ExtendScript File/Folder API helpers (hlm_*) in hostscript.jsx — eliminates --mixed-context requirement and restores CEP DevTools console output.
