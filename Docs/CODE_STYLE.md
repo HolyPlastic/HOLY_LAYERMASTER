@@ -1,4 +1,4 @@
-# HLM Code Style
+# HLM Code Style,
 
 Read this when creating or editing HTML, CSS, or JS files.
 

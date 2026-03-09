@@ -409,19 +409,19 @@ const HLMDragDrop = (function () {
         });
     }
 
-    // ── Public API ───────────────────────────────────────────────────
+  // ── Public API ───────────────────────────────────────────────────
     return {
 
         /**
          * Initialise the drag system. Safe to call multiple times (re-initialises).
          *
          * @param {object}   opts
-         * @param {string}   opts.sectionsContainerId   ID of the element holding all section-wraps
-         * @param {string}   opts.sectionIdAttr         Attribute on each wrap identifying it, e.g. 'data-section-id'
-         * @param {Function} opts.getOrder              Returns the current order array, e.g. () => config.sectionOrder
-         * @param {Function} opts.onSectionDrop         Called with (newOrder[]) after a section is dropped
-         * @param {Array}    [opts.rowContainers]       [{containerId, type}] — one per draggable row list
-         * @param {Function} [opts.onRowDrop]           Called with (type, fromIdx, insertAt) after a row is dropped
+         * @param {string}   opts.sectionsContainerId  ID of the element holding all section-wraps
+         * @param {string}   opts.sectionIdAttr        Attribute on each wrap identifying it, e.g. 'data-section-id'
+         * @param {Function} opts.getOrder             Returns the current order array, e.g. () => config.sectionOrder
+         * @param {Function} opts.onSectionDrop        Called with (newOrder[]) after a section is dropped
+         * @param {Array}    [opts.rowContainers]      [{containerId, type}] — one per draggable row list
+         * @param {Function} [opts.onRowDrop]          Called with (type, fromIdx, insertAt) after a row is dropped
          * @param {string}   [opts.sectionHeaderSelector]  Default: '.section-header'
          * @param {string}   [opts.rowSelector]            Default: '.row'
          * @param {string}   [opts.rowDragHandle]          Default: '.sel-btn'
@@ -449,6 +449,24 @@ const HLMDragDrop = (function () {
             if (!container || !order) return;
             _applyOrderToDOM(container, order);
         },
+
+        /**
+         * Refresh drag handles on dynamically rendered rows.
+         * Call this synchronously after async DOM updates to bypass CEP observer microtask drops.
+         */
+        refresh: function () {
+            if (!_o || !_o.rowContainers) return;
+            
+            _o.rowContainers.forEach(function (cfg) {
+                const container  = document.getElementById(cfg.containerId);
+                if (!container) return;
+                
+                const handleSel  = _o.rowDragHandle || '.sel-btn';
+                container.querySelectorAll(handleSel).forEach(function (h) {
+                    h.setAttribute('draggable', 'true');
+                });
+            });
+        }
 
     };
 

@@ -19,4 +19,4 @@ HLMColorPicker.init({ fetchSwatches, onApply, onReset });
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation as standalone module.
+- 1: Initial implementation as standalone module.

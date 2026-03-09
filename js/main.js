@@ -163,13 +163,16 @@ function openColorPicker(bankId, anchorEl) {
 // ─────────────────────────────────────────────────────
 function loadConfig(projPath, cb) {
     csInterface.evalScript(`hlm_readConfig("${_esc(projPath)}")`, raw => {
-        if (!raw || raw === 'NOT_FOUND' || raw.indexOf('ERROR') === 0) {
-            console.log('[HLM] loadConfig: no config found, using defaults.');
-            cb(makeDefaultConfig());
-            return;
-        }
         try {
+            // Check for empty, missing, or JSX error strings BEFORE parsing
+            if (!raw || raw === 'NOT_FOUND' || raw.indexOf('ERROR') === 0) {
+                console.log('[HLM] loadConfig: no config found or error returned, using defaults. Message:', raw);
+                cb(makeDefaultConfig());
+                return;
+            }
+            
             const cfg = JSON.parse(raw);
+            
             // Backfill missing fields
             if (!cfg.layStates)    cfg.layStates    = makeDefaultConfig().layStates;
             if (!cfg.bankColors)   cfg.bankColors   = {};
@@ -181,9 +184,11 @@ function loadConfig(projPath, cb) {
                 if (bank.iconIdx === undefined) bank.iconIdx = i % BANK_ICONS.length;
                 if (!cfg.bankColors[bank.id])   cfg.bankColors[bank.id] = BANK_PALETTE[i % BANK_PALETTE.length];
             });
+            
             cb(cfg);
         } catch(e) {
-            console.error('[HLM] loadConfig parse error:', e);
+            // This catch prevents the silent failure!
+            console.error('[HLM] Fatal error inside loadConfig callback:', e);
             cb(makeDefaultConfig());
         }
     });
@@ -266,14 +271,41 @@ function renderBankRow(type, bank) {
 }
 
 function renderAll() {
+    console.log('[HLM Trace] 🟢 renderAll() fired.');
     const kfContainer  = document.getElementById('kfBanksContainer');
     const layContainer = document.getElementById('layBanksContainer');
+    
+    if (!kfContainer || !layContainer) {
+        console.error('[HLM Trace] 🔴 Missing DOM containers!');
+        return;
+    }
+
     kfContainer.innerHTML  = '';
     layContainer.innerHTML = '';
+    
     currentConfig.kfBanks.forEach(bank  => kfContainer.appendChild(renderBankRow('kf', bank)));
     currentConfig.layBanks.forEach(bank => layContainer.appendChild(renderBankRow('lay', bank)));
+    
+    console.log(`[HLM Trace] Rows rendered: ${currentConfig.kfBanks.length} KF, ${currentConfig.layBanks.length} Lay`);
+    
     refreshBankIndicators();
     syncStatesUI();
+
+    // Re-stamp drag handles now that the async DOM update is finished
+    if (typeof HLMDragDrop !== 'undefined') {
+        if (HLMDragDrop.applyOrder) {
+            HLMDragDrop.applyOrder(currentConfig.sectionOrder);
+            console.log('[HLM Trace] DragDrop applyOrder() triggered.');
+        }
+        
+        // Let's manually trigger a re-init/refresh if the module supports it
+        if (HLMDragDrop.refresh) {
+            HLMDragDrop.refresh();
+            console.log('[HLM Trace] DragDrop refresh() triggered.');
+        }
+    } else {
+        console.warn('[HLM Trace] 🟡 HLMDragDrop is undefined during renderAll!');
+    }
 }
 // #endregion
 
@@ -536,21 +568,25 @@ let _lastKnownCompId   = null;
 
 function _applyContext(ctx) {
     if (!ctx) return;
+    console.log('[HLM Trace] 🔵 _applyContext received:', ctx.projPath);
+    
     if (ctx.projPath && ctx.projPath !== 'UNSAVED' && ctx.projPath !== _lastKnownProjPath) {
         _lastKnownProjPath = ctx.projPath;
         currentProjPath    = ctx.projPath;
-        // loadConfig is now async — everything that depends on config goes in the callback
+        
+        console.log('[HLM Trace] Loading config for saved project...');
         loadConfig(ctx.projPath, cfg => {
+            console.log('[HLM Trace] Config loaded via async callback.');
             currentConfig = cfg;
             activeStateId = cfg.layStates.length > 0 ? cfg.layStates[0].id : null;
             renderAll();
-            HLMDragDrop.applyOrder(currentConfig.sectionOrder);
         });
     } else if (!_lastKnownProjPath && (!ctx.projPath || ctx.projPath === 'UNSAVED')) {
-        // First context response with no saved project — render defaults
+        console.log('[HLM Trace] Project is UNSAVED. Rendering defaults.');
         _lastKnownProjPath = 'UNSAVED';
         renderAll();
     }
+    
     if (ctx.compId !== _lastKnownCompId) {
         _lastKnownCompId = ctx.compId;
         currentCompId    = ctx.compId;

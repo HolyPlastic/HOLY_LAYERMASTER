@@ -14,5 +14,5 @@ Right-click Capture btn → color picker (see `docs/features/05-color-picker.md`
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation.
-- 2. applyLayerStates now disables hideShyLayers before writing layer props and restores the saved value at the end — fixes shy mode not being restored when it was off at apply time.
+- 1: Initial implementation.
+- 2: applyLayerStates now disables hideShyLayers before writing layer props and restores the saved value at the end — fixes shy mode not being restored when it was off at apply time.

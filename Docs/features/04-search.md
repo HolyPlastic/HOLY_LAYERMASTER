@@ -12,4 +12,4 @@ Clears existing selection before applying result.
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation with Base64 encoding.
+- 1: Initial implementation with Base64 encoding.

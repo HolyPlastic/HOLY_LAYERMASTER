@@ -15,4 +15,4 @@ The rename is wrapped in a single undo group ("Rename Selected Layers").
 ---
 
 ## Dev Log
-- 1. Initial implementation — search/replace, prefix, suffix modes with Base64 bridge encoding.
+- 1: Initial implementation — search/replace, prefix, suffix modes with Base64 bridge encoding.

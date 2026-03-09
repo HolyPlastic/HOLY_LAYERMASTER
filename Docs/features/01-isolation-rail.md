@@ -26,8 +26,8 @@ All selected locked → unlock all. Otherwise → lock all.
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation of all three isolation buttons.
-- 2024-08-06: Added known bug notes — shy reverse tripped by hidden layers, states potentially same root cause.
+- 1: Initial implementation of all three isolation buttons.
+- 2: Added known bug notes — shy reverse tripped by hidden layers, states potentially same root cause.
 - 3. isolateSolo() now applies solo toggle only to visible layers — fixes AE error when shy-hidden layers are in the selection.
 
 ---

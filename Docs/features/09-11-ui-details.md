@@ -27,4 +27,4 @@ Click the star icon in any section header to toggle collapse. Toggles `section-c
 `ResizeObserver` on `document.body`. Below **150px** width: adds `.narrow` to body → bank button pairs stack vertically. Feature-detection guard: `typeof ResizeObserver !== 'undefined'`.
 
 ## Dev Log
-- 2024-07-29: Initial implementation. Breakpoint set at 150px.
+- 1: Initial implementation. Breakpoint set at 150px.

@@ -37,5 +37,5 @@ Backward compat: old `data.ids` flat array is promoted to `data.layers` format t
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation of KF and Layer banks with DNA tagging.
-- 2. Right-click on sel or cap button now shows a context dropdown (Clear / Colours) replacing the old direct right-click-to-colorpicker on cap button only.
+- 1: Initial implementation of KF and Layer banks with DNA tagging.
+- 2: Right-click on sel or cap button now shows a context dropdown (Clear / Colours) replacing the old direct right-click-to-colorpicker on cap button only. (NO IT DOESNT)

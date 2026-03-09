@@ -24,4 +24,5 @@ Each bank/state write is a separate JSON keyed by `<compId>_<bankId>`. Clear = `
 ---
 
 ## Dev Log
-- 2024-07-29: Initial file-based persistence implementation.
+- 1: Initial file-based persistence implementation.
+- 2: Updated `loadConfig()` async callback with a `try/catch` block and explicit string checks to prevent silent C++ engine failures when reading missing/unsaved project configs.

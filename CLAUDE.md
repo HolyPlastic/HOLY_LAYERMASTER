@@ -28,6 +28,6 @@ Read only what the task needs:
 ## Dev Log Rule
 After every edit, append one entry to the dev log in the relevant `docs/features/<feature>.md`:
 ```
-- [number]: [what changed] — [why, one sentence max]
+- [number]: [what changed] [why, one sentence max] - [relevant code, citaitons, snippets, whatever is helpful for future agents]
 ```
-Number sequentially from existing entries. Keep it factual. No prose.
+Number sequentially from existing entries. Keep it factual. No prose. Please add actual code change details. Try not to create a huge log but do not scrimp on important details. 

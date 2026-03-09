@@ -44,6 +44,7 @@ Failing to do any of these means `applyOrder()` and `_initSectionDrag()` cannot 
 ---
 
 ## Dev Log
-- 2024-07-29: Initial implementation — section, row, and ISO bar drag contexts.
-- Fix row drag: replaced dynamic-draggable mousedown gate with MutationObserver pre-tagging — CEP/Chromium evaluates draggable at mousedown time, before handlers run, so dynamic setting was never seen.
-- Fix section drag: added missing `sectionsContainer` wrapper div and `data-section-id` attributes to all section wrappers in `index.html`. These are required by the drag module and were absent after a new section (rename) was added by another agent without following the correct pattern.
+- 1: Initial implementation — section, row, and ISO bar drag contexts.
+- 2: Fix row drag: replaced dynamic-draggable mousedown gate with MutationObserver pre-tagging — CEP/Chromium evaluates draggable at mousedown time, before handlers run, so dynamic setting was never seen.
+- 3: Fix section drag: added missing `sectionsContainer` wrapper div and `data-section-id` attributes to all section wrappers in `index.html`. These are required by the drag module and were absent after a new section (rename) was added by another agent without following the correct pattern.
+- 4: Fixed silent row-drag failure caused by async refactoring: Chromium `MutationObserver` microtasks frequently drop when DOM changes are triggered from inside a native C++ `csInterface.evalScript` callback. Added explicit `HLMDragDrop.refresh()` method to manually re-tag `.sel-btn` handles synchronously after async renders.
