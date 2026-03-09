@@ -275,10 +275,7 @@ function renderAll() {
     const kfContainer  = document.getElementById('kfBanksContainer');
     const layContainer = document.getElementById('layBanksContainer');
     
-    if (!kfContainer || !layContainer) {
-        console.error('[HLM Trace] 🔴 Missing DOM containers!');
-        return;
-    }
+    if (!kfContainer || !layContainer) return;
 
     kfContainer.innerHTML  = '';
     layContainer.innerHTML = '';
@@ -286,25 +283,20 @@ function renderAll() {
     currentConfig.kfBanks.forEach(bank  => kfContainer.appendChild(renderBankRow('kf', bank)));
     currentConfig.layBanks.forEach(bank => layContainer.appendChild(renderBankRow('lay', bank)));
     
-    console.log(`[HLM Trace] Rows rendered: ${currentConfig.kfBanks.length} KF, ${currentConfig.layBanks.length} Lay`);
-    
     refreshBankIndicators();
-    syncStatesUI();
+    if (typeof syncStatesUI === 'function') syncStatesUI();
 
     // Re-stamp drag handles now that the async DOM update is finished
     if (typeof HLMDragDrop !== 'undefined') {
         if (HLMDragDrop.applyOrder) {
             HLMDragDrop.applyOrder(currentConfig.sectionOrder);
-            console.log('[HLM Trace] DragDrop applyOrder() triggered.');
         }
-        
-        // Let's manually trigger a re-init/refresh if the module supports it
         if (HLMDragDrop.refresh) {
+            console.log('[HLM Trace] Calling HLMDragDrop.refresh()...');
             HLMDragDrop.refresh();
-            console.log('[HLM Trace] DragDrop refresh() triggered.');
+        } else {
+            console.error('[HLM Trace] 🔴 HLMDragDrop.refresh is UNDEFINED! The module did not update properly.');
         }
-    } else {
-        console.warn('[HLM Trace] 🟡 HLMDragDrop is undefined during renderAll!');
     }
 }
 // #endregion

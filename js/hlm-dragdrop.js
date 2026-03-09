@@ -454,17 +454,28 @@ const HLMDragDrop = (function () {
          * Refresh drag handles on dynamically rendered rows.
          * Call this synchronously after async DOM updates to bypass CEP observer microtask drops.
          */
+        /**
+         * Refresh drag handles on dynamically rendered rows.
+         * Call this synchronously after async DOM updates to bypass CEP observer microtask drops.
+         */
         refresh: function () {
-            if (!_o || !_o.rowContainers) return;
+            if (!_o || !_o.rowContainers) {
+                console.log('[HLM Trace] 🟡 DragDrop refresh aborted: module not initialized yet.');
+                return;
+            }
             
             _o.rowContainers.forEach(function (cfg) {
                 const container  = document.getElementById(cfg.containerId);
                 if (!container) return;
                 
                 const handleSel  = _o.rowDragHandle || '.sel-btn';
-                container.querySelectorAll(handleSel).forEach(function (h) {
+                const handles = container.querySelectorAll(handleSel);
+                
+                handles.forEach(function (h) {
                     h.setAttribute('draggable', 'true');
                 });
+                
+                console.log(`[HLM Trace] DragDrop tagged ${handles.length} handles in #${cfg.containerId}`);
             });
         }
 
