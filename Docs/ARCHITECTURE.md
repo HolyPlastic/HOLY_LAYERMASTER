@@ -6,15 +6,27 @@ Cross-cutting systems. Read this when touching storage, the CEP bridge, DNA tagg
 
 ## CEP Bridge
 
-JS → JSX calls go through `csInterface.evalScript(scriptString, callback)`. The bridge is **async** — the callback receives a string (always a string). Parse JSON defensively:
+JS → JSX calls go through `csInterface.evalScript(scriptString, callback)`. The bridge is **async** — the callback receives a string (always a string). 
+
+**⚠️ CRITICAL ARCHITECTURE TRAP: The Silent Callback**
+Because callbacks are invoked by the native C++ engine, standard browser error bubbling does not apply. If your callback code throws an error (e.g., parsing bad JSON, referencing an undefined variable), the C++ engine swallows the error silently. Nothing will log to DevTools. The panel will simply halt.
+
+You must parse JSON defensively and wrap the entire callback in a `try/catch`:
 
 ```js
 csInterface.evalScript('myFunction()', raw => {
-    try { const data = JSON.parse(raw); } catch(e) { /* handle */ }
+    try { 
+        if (!raw || raw.indexOf('ERROR') === 0) throw new Error(raw);
+        const data = JSON.parse(raw); 
+        // ... do stuff ...
+    } catch(e) { 
+        console.error('[HLM] Fatal error in callback:', e);
+        // ALWAYS provide a fallback execution path here
+    }
 });
 ```
 
-Events flow the other way via `CSXSEvent`. The hostscript dispatches `com.hlm.contextChanged` when the active project or comp changes. JS listens with `csInterface.addEventListener`.
+Events flow the other way via CSXSEvent. The hostscript dispatches com.hlm.contextChanged when the active project or comp changes. JS listens with csInterface.addEventListener.
 
 ---
 

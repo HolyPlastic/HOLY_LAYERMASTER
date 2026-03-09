@@ -17,6 +17,8 @@
 - **When adding a new section to `index.html`**, it must be wrapped in `<div data-section-id="yourKey">` inside `<div id="sectionsContainer">`, and `'yourKey'` must be added to `sectionOrder` in both `makeDefaultConfig()` and the `loadConfig()` backfill in `main.js`. See `docs/features/08-drag-drop.md`.
 - **No Node.js `fs` or `path` in `main.js`** — file I/O goes through `hlm_*` helper functions in `hostscript.jsx` via `evalScript()`. `--mixed-context` is not in the manifest and must never be added back. See `docs/ARCHITECTURE.md` for the storage pattern.
 - **`loadConfig()` is async** — it takes a callback. All logic that depends on the loaded config must go inside that callback, not after the call.
+- - **The CEP Callback Black Hole:** If a JavaScript error occurs inside an `evalScript` callback, the underlying C++ engine catches the exception and swallows it entirely. It will NEVER appear in the DevTools console, and execution simply dies. **You MUST wrap the entire body of any `evalScript` callback in a `try/catch` block and `console.error` the output.**
+- **Syncing DOM Updates inside Callbacks:** `MutationObserver` microtasks are often swallowed or dropped when DOM changes are triggered from inside a native C++ `evalScript` callback. If you re-render UI elements asynchronously (like inside `loadConfig`), you MUST explicitly call `HLMDragDrop.refresh()` synchronously after rendering to re-tag drag handles. Do not rely on observers.
 
 ## Docs Map
 Read only what the task needs:

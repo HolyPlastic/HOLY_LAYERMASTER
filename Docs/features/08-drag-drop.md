@@ -43,6 +43,16 @@ Failing to do any of these means `applyOrder()` and `_initSectionDrag()` cannot 
 
 ---
 
+## ⚠️ Async Re-rendering & The MutationObserver Bug
+Because Adobe CEP triggers `evalScript` callbacks from a native C++ context, Chromium `MutationObserver` microtasks frequently fail to flush if DOM changes occur inside those callbacks. 
+
+If rows are rendered during the async boot sequence or a project context swap, the observer will fail to tag the new `.sel-btn` elements with `draggable="true"`, breaking row drag silently. 
+
+**Rule:** Whenever `renderAll()` or any function dynamically redraws the row containers, it must explicitly call `if (HLMDragDrop.refresh) HLMDragDrop.refresh();` at the very end to bypass the observer bug and tag the DOM synchronously.
+
+---
+
+
 ## Dev Log
 - 1: Initial implementation — section, row, and ISO bar drag contexts.
 - 2: Fix row drag: replaced dynamic-draggable mousedown gate with MutationObserver pre-tagging — CEP/Chromium evaluates draggable at mousedown time, before handlers run, so dynamic setting was never seen.
