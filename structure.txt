@@ -4,7 +4,6 @@ C:.
 |   .debug
 |   .gitattributes
 |   CLAUDE.md
-|   Holy_LayerNames.jsx
 |   index.html
 |   structure.txt
 |   x_generate_structure.bat
@@ -18,6 +17,8 @@ C:.
 +---Docs
 |   |   ARCHITECTURE.md
 |   |   CODE_STYLE.md
+|   |   HOLY PLASTIC AGENT BRAND BOOK.md
+|   |   PLUGIN SPEC.md
 |   |   ROADMAP.md
 |   |   
 |   \---features
@@ -43,6 +44,4 @@ C:.
 |       
 \---PROJECT_DOCUMENTS
         DEV LOG.md
-        HOLY PLASTIC AGENT BRAND BOOK.md
-        PLUGIN SPEC.md
         

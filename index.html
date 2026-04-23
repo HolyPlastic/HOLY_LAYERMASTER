@@ -9,10 +9,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dosis:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="css/style.css">
+    <script>
+    (function STYLE_boot() {
+      try {
+        var hex = localStorage.getItem('hlm_accentColor') || '#ff7c44';
+        var clean = hex.replace('#', '');
+        var bigint = parseInt(clean, 16);
+        var r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
+        var r1 = r / 255, g1 = g / 255, b1 = b / 255;
+        var max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1);
+        var h = 0, s = 0, l = (max + min) / 2;
+        if (max !== min) {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          if (max === r1) h = (g1 - b1) / d + (g1 < b1 ? 6 : 0);
+          else if (max === g1) h = (b1 - r1) / d + 2;
+          else h = (r1 - g1) / d + 4;
+          h /= 6;
+        }
+        var root = document.documentElement;
+        root.style.setProperty('--accent', hex);
+        root.style.setProperty('--ACCENT-H', Math.round(h * 360));
+        root.style.setProperty('--ACCENT-S', Math.round(s * 100) + '%');
+        root.style.setProperty('--ACCENT-L', Math.round(l * 100) + '%');
+        root.style.setProperty('--ACCENT-RGB', r + ', ' + g + ', ' + b);
+      } catch (err) {}
+    })();
+    </script>
 </head>
 <!-- #endregion
 ───────────────
-─────────────────────────────────────────────────── -->
+────────────────────────────────────────────────── -->
+
 <body>
 
 <!-- ────────────────────────────────────────────── -->
@@ -47,7 +75,7 @@
 
 <!-- #endregion
 ───────────────
-─────────────────────────────────────────────────── -->
+────────────────────────────────────────────────── -->
 
 <!-- ────────────────────────────────────────────── -->
 <!-- #region 🔴🔴🔴 PLUGIN FRAME
@@ -56,16 +84,31 @@
 
     <!-- ────────────────────────────────────────── -->
     <!-- #region 🔷🔷🔷 COMP HEADER
-    ─────────────────────────────────────────────── -->
-    <div id="activeCompLabel" class="comp-label">NO ACTIVE COMP</div>
+     ─────────────────────────────────────────────── -->
+    <div class="comp-header">
+        <span id="activeCompLabel" class="comp-label">NO ACTIVE COMP</span>
+        <button id="hlm-settings-cog-btn" class="btn-settings-cog" title="Open settings">
+            <svg viewBox="0 0 37.68 41.64" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-miterlimit="10">
+                <path d="M21.34,39.62l12.54-7.24c1.47-.85,2.38-2.19,2.49-3.93v-15.27c-.12-1.74-1.02-3.08-2.49-3.93L21.21,1.94c-1.65-.95-3.39-.79-5,.14L3.64,9.35c-1.42.82-2.21,2.19-2.34,3.83v15.28c.12,1.69.97,3.04,2.42,3.88l12.67,7.31c1.59.92,3.31.93,4.95-.02Z"/>
+                <path d="M27.16,20.82c0,4.6-3.73,8.32-8.32,8.32s-8.32-3.73-8.32-8.32,3.73-8.32,8.32-8.32,8.32,3.73,8.32,8.32Z"/>
+            </svg>
+        </button>
+    </div>
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
 
     <!-- ────────────────────────────────────────── -->
-    <!-- #region ⚡⚡⚡ ISOLATION BAR
+    <!-- #region ⚡⚡⚡ ISOLATION BAR (collapsible, persistent header)
     ─────────────────────────────────────────────── -->
-    <div id="isolationBar" class="isolation-bar">
+    <div id="isoWrap">
+    <div id="isolationBar" class="section-header" data-body-id="isoBody">
+        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+        </svg>
+        <span class="section-title">ISOLATION</span>
+    </div>
+    <div id="isoBody" class="section-body iso-body">
         <button id="soloBtn" class="iso-btn" title="Toggle solo on selected layers">
             <svg viewBox="0 0 8.25 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="8.25 3 4.45 3.77 6.04 0 0 6.65 4.11 6.04 3.04 10 8.25 3"/>
@@ -85,185 +128,435 @@
             </svg>
             <span class="iso-label">LOCK</span>
         </button>
-    </div>
-    <!-- #endregion
-    ───────────────
-    ─────────────────────────────────────────────── -->
-
-    <!-- ────────────────────────────────────────── -->
-    <!-- #region 💾💾💾 KEYFRAME MEMORY
-    ─────────────────────────────────────────────── -->
-    <div id="sectionsContainer">
-    <div data-section-id="kf">
-    <div class="section-header" data-body-id="kfBody">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
-        </svg>
-        <span class="section-title">KF Memory</span>
-    </div>
-    <div class="section-body" id="kfBody">
-        <div id="kfBanksContainer"></div>
-        <div class="bank-controls">
-            <button id="addKfBank" class="ctrl-btn add-btn" title="Add new keyframe memory bank">
-                <!-- icons-plus-line -->
-                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-                </svg>
-            </button>
-            <button id="removeKfBank" class="ctrl-btn rem-btn" title="Remove last keyframe memory bank">
-                <!-- icons-minus-line -->
-                <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-    </div>
-    <!-- #endregion
-    ───────────────
-    ─────────────────────────────────────────────── -->
-
-    <!-- ────────────────────────────────────────── -->
-    <!-- #region 🗂️🗂️🗂️ LAYER MEMORY
-    ─────────────────────────────────────────────── -->
-    <div data-section-id="lay">
-    <div class="section-header" data-body-id="layBody">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
-        </svg>
-        <span class="section-title">Layer Memory</span>
-    </div>
-    <div class="section-body" id="layBody">
-        <div id="layBanksContainer"></div>
-        <div class="bank-controls">
-            <button id="addLayBank" class="ctrl-btn add-btn" title="Add new layer memory bank">
-                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-                </svg>
-            </button>
-            <button id="removeLayBank" class="ctrl-btn rem-btn" title="Remove last layer memory bank">
-                <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-    </div>
-    <!-- #endregion
-    ───────────────
-    ─────────────────────────────────────────────── -->
-
-    <!-- ────────────────────────────────────────── -->
-    <!-- #region 📷📷📷 LAYER STATES
-    ─────────────────────────────────────────────── -->
-    <div data-section-id="states">
-    <div class="section-header" data-body-id="statesBody">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
-        </svg>
-        <span class="section-title">Layer States</span>
-        <button id="clearStateBtn" class="clr-btn" title="Clear current state data">
-            <!-- icons-cross-diagonal — clear / remove -->
-            <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="10.5" y1=".5" x2=".5" y2="10.5"/>
-                <line x1=".5" y1=".5" x2="10.5" y2="10.5"/>
+        <button id="invertBtn" class="iso-btn" title="Invert selection (selects all non-selected, non-locked layers)">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="10" height="10" rx="1" stroke-dasharray="2 1.5"/>
+                <path d="M5 7h4"/>
+                <path d="M7 5v4"/>
             </svg>
+            <span class="iso-label">INVERT</span>
         </button>
     </div>
-    <div class="section-body" id="statesBody">
-        <div class="row" id="stateRow">
-            <button id="applyStateBtn" class="icon-btn" title="Apply saved timeline switches to matching layers">
-                <!-- icons-zigbolt-outline — send / apply -->
-                <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                    <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
+    </div>
+    <!-- #endregion
+    ───────────────
+    ─────────────────────────────────────────────── -->
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- #region 📑📑📑 TAB NAV
+    ─────────────────────────────────────────────── -->
+    <nav id="tab-nav">
+        <button class="tab-btn active" data-tab="memory">SELECTA</button>
+        <button class="tab-btn" data-tab="states">STATES</button>
+        <button class="tab-btn" data-tab="hunt">HUNT</button>
+        <button class="tab-btn" data-tab="rename">RENAME</button>
+    </nav>
+    <!-- #endregion
+    ───────────────
+    ─────────────────────────────────────────────── -->
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- #region 📑📑📑 TAB CONTENT
+    ─────────────────────────────────────────────── -->
+    <div id="tab-content">
+
+    <!-- ── MEMORY TAB ──────────────────────────── -->
+    <div class="tab-panel active" id="tab-memory">
+    <div id="sectionsContainer">
+
+        <!-- ─── KF MEMORY ─── -->
+        <div data-section-id="kf">
+        <div class="section-header" data-body-id="kfBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">KF Memory</span>
+            <button id="bankLeanToggle" class="bank-lean-toggle" title="Toggle lean / verbose bank layout">
+                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="3.5" height="8"/>
+                    <rect x="5.5" y="1" width="3.5" height="8"/>
                 </svg>
             </button>
-            <div class="state-combo-wrap">
-                <input type="text" id="stateNameInput" class="state-combo-input" placeholder="State Name" title="Active State (click to rename)">
-                <button id="stateDropdownBtn" class="state-combo-arrow" title="Switch active state">
-                    <!-- icons-chevron-down -->
-                    <svg viewBox="0 0 9.17 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="8.67 .5 4.59 5.5 .5 .5"/>
+            <button id="kfStrictToggle" class="kf-strict-toggle" title="Strict recall — require exact match (off: fuzzy match, tolerates added/moved keys)">
+                <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="3" width="7" height="4.5"/>
+                    <path d="M3 3 V2 a2 2 0 0 1 4 0 V3"/>
+                </svg>
+            </button>
+        </div>
+        <div class="section-body" id="kfBody">
+            <div id="kfBanksContainer"></div>
+            <div class="bank-controls">
+                <button id="addKfBank" class="ctrl-btn add-btn" title="Add new keyframe memory bank">
+                    <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
+                        <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
                     </svg>
                 </button>
-                <div id="stateDropdownList" class="state-dropdown-list" style="display:none"></div>
+                <button id="removeKfBank" class="ctrl-btn rem-btn" title="Remove last keyframe memory bank">
+                    <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                        <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
+                    </svg>
+                </button>
             </div>
-            <button id="captureStateBtn" class="icon-btn cap-btn" title="Capture current Eye, Shy, Solo, and Lock states into this snapshot">
-                <!-- icons-lens-split — capture / focus -->
-                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="3.59" y1="3.59" x2=".5" y2=".5"/>
-                    <line x1="10.5" y1="10.5" x2="7.41" y2="7.41"/>
-                    <path d="M7.41,3.59c-1.05-1.05-2.76-1.05-3.82,0-1.05,1.05-1.05,2.76,0,3.82,1.05,1.05,2.76,1.05,3.82,0,1.05-1.05,1.05-2.76,0-3.82Z"/>
-                </svg>
-            </button>
         </div>
-    </div>
-    </div>
-    <!-- #endregion
-    ───────────────
-    ─────────────────────────────────────────────── -->
+        </div>
 
-    <!-- ────────────────────────────────────────── -->
-    <!-- #region 🔍🔍🔍 SEARCH
-    ─────────────────────────────────────────────── -->
-    <div data-section-id="search">
-    <div class="section-header" data-body-id="searchBody">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
-        </svg>
-        <span class="section-title">Search</span>
-    </div>
-    <div class="section-body" id="searchBody">
-        <div class="row" id="searchRow">
-            <button id="searchBtn" class="icon-btn" title="Quick select layers matched by search term">
-                <!-- icons-target-cross-ring — targeting / select -->
-                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
-                    <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
-                    <circle cx="5.5" cy="5.47" r="3.56"/>
-                </svg>
-            </button>
-            <input type="text" placeholder="Name // Effect // Comment" id="searchInput" title="Search by name, effect, or comment">
+        <!-- ─── LAYER MEMORY ─── -->
+        <div data-section-id="lay">
+        <div class="section-header" data-body-id="layBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">Layer Memory</span>
         </div>
-    </div>
-    </div>
-    <!-- #endregion
-    ───────────────
-    ─────────────────────────────────────────────── -->
+        <div class="section-body" id="layBody">
+            <div id="layBanksContainer"></div>
+            <div class="bank-controls">
+                <button id="addLayBank" class="ctrl-btn add-btn" title="Add new layer memory bank">
+                    <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="5.5" y1=".5" x2="5.5" y2="10.5"/>
+                        <line x1=".5" y1="5.5" x2="10.5" y2="5.5"/>
+                    </svg>
+                </button>
+                <button id="removeLayBank" class="ctrl-btn rem-btn" title="Remove last layer memory bank">
+                    <svg viewBox="0 0 9.4 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                        <line x1=".5" y1=".5" x2="8.9" y2=".5"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        </div>
 
-    <!-- ────────────────────────────────────────── -->
-    <!-- #region ✏️✏️✏️ LAYER RENAME
-    ─────────────────────────────────────────────── -->
-    <div data-section-id="rename">
-    <div class="section-header" data-body-id="renameBody">
-        <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
-        </svg>
-        <span class="section-title">Rename</span>
-    </div>
-    <div class="section-body" id="renameBody">
-        <!-- Mode selectors -->
-        <div class="rename-modes">
-            <button id="renameModeSearch" class="rename-mode-btn rename-mode-active" title="Search and replace text in layer names">SRCH</button>
-            <button id="renameModePrefix" class="rename-mode-btn" title="Add text before layer name">PFX</button>
-            <button id="renameModeSuffix" class="rename-mode-btn" title="Add text after layer name">SFX</button>
+        <!-- ─── SELECTA ─── -->
+        <div data-section-id="selecta">
+        <div class="section-header" data-body-id="selectaBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">SELECTA</span>
         </div>
-        <!-- Fire row -->
-        <div class="row" id="renameRow">
-            <button id="renameFireBtn" class="icon-btn rename-fire-btn" title="Apply rename to selected layers">
-                <!-- icons-zigbolt-outline — fire / apply -->
-                <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                    <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
-                </svg>
-            </button>
-            <input type="text" id="renameInput1" placeholder="Search…" title="Text to search for">
-            <input type="text" id="renameInput2" placeholder="Replace…" title="Replace with">
+        <div class="section-body" id="selectaBody">
+            <div class="bank-controls selecta-btn-row">
+                <button id="selectChildrenBtn"    class="ctrl-btn" title="Select all children of current selection">SELECT CHILDREN</button>
+                <button id="selectParentBtn"      class="ctrl-btn" title="Select parent of current selection">SELECT PARENT</button>
+            </div>
+            <div class="bank-controls selecta-btn-row">
+                <button id="selectExprLinksBtn"   class="ctrl-btn" title="Select all layers referenced in expressions on selected layers">EXPR LINKS</button>
+                <button id="selectInverseRefsBtn" class="ctrl-btn" title="Select all layers whose expressions, effects, or track mattes reference the selected layer(s)">INV REFS</button>
+            </div>
+            <!-- Pattern chip area -->
+            <div class="selecta-pattern-header">
+                <span class="selecta-pattern-label">PATTERNS</span>
+            </div>
+            <div id="selectaPatternChips" class="selecta-pattern-chips"></div>
+            <!-- Quarantine drop zone -->
+            <div id="selectaQuarantineWrap" class="selecta-q-wrap">
+                <div class="selecta-q-header">
+                    <svg class="section-star selecta-q-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-body-id="selectaQuarantineBody">
+                        <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+                    </svg>
+                    <span class="selecta-q-label">QUARANTINE</span>
+                </div>
+                <div id="selectaQuarantineList" class="selecta-q-list"></div>
+            </div>
+            <!-- Pattern controls -->
+            <div class="selecta-controls">
+                <div class="selecta-pattern-counter">
+                    <button id="selectaPatternMinus" class="hunt-ctrl-btn" title="Fewer layers">-</button>
+                    <span id="selectaPatternCount">2</span>
+                    <button id="selectaPatternPlus"  class="hunt-ctrl-btn" title="More layers">+</button>
+                </div>
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="selectaPrefixOnly" checked>
+                    <span>Prefix only</span>
+                </label>
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="selectaShowFileTypes">
+                    <span>Use File types</span>
+                </label>
+            </div>
         </div>
-    </div>
-    </div>
+        </div>
+
     </div><!-- /#sectionsContainer -->
+    </div><!-- /tab-memory -->
+
+    <!-- ── STATES TAB ───────────────────────────── -->
+    <div class="tab-panel" id="tab-states">
+
+        <div data-section-id="states">
+        <div class="section-header" data-body-id="statesBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">Layer States</span>
+            <button id="clearStateBtn" class="clr-btn" title="Clear current state data">
+                <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="10.5" y1=".5" x2=".5" y2="10.5"/>
+                    <line x1=".5" y1=".5" x2="10.5" y2="10.5"/>
+                </svg>
+            </button>
+        </div>
+        <div class="section-body" id="statesBody">
+            <div class="row" id="stateRow">
+                <button id="applyStateBtn" class="icon-btn" title="Apply saved timeline switches to matching layers">
+                    <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
+                    </svg>
+                </button>
+                <div class="state-combo-wrap">
+                    <input type="text" id="stateNameInput" class="state-combo-input" placeholder="State Name" title="Active State (click to rename)">
+                    <button id="stateDropdownBtn" class="state-combo-arrow" title="Switch active state">
+                        <svg viewBox="0 0 9.17 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="8.67 .5 4.59 5.5 .5 .5"/>
+                        </svg>
+                    </button>
+                    <div id="stateDropdownList" class="state-dropdown-list" style="display:none"></div>
+                </div>
+                <button id="captureStateBtn" class="icon-btn cap-btn" title="Capture current Eye, Shy, Solo, and Lock states into this snapshot">
+                    <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="3.59" y1="3.59" x2=".5" y2=".5"/>
+                        <line x1="10.5" y1="10.5" x2="7.41" y2="7.41"/>
+                        <path d="M7.41,3.59c-1.05-1.05-2.76-1.05-3.82,0-1.05,1.05-1.05,2.76,0,3.82,1.05,1.05,2.76,1.05,3.82,0,1.05-1.05,1.05-2.76,0-3.82Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        </div>
+
+    </div><!-- /tab-states -->
+
+    <!-- ── HUNT TAB ────────────────────────────── -->
+    <div class="tab-panel" id="tab-hunt">
+
+        <div data-section-id="hunt">
+        <div class="section-header" data-body-id="huntBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">HUNT</span>
+        </div>
+        <div class="section-body" id="huntBody">
+
+            <!-- Search button row (full width) -->
+            <div class="row">
+                <button id="huntFireBtn" class="hunt-fire-btn-full" title="Search layers">
+                    <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="4.5" cy="4.5" r="3"/>
+                        <line x1="7.5" y1="7.5" x2="10.5" y2="10.5"/>
+                    </svg>
+                    <span>SEARCH</span>
+                </button>
+            </div>
+
+            <!-- Search input row -->
+            <div class="row hunt-search-row">
+                <input type="text" id="huntInput" placeholder="Search layers..." title="Search term">
+                <button id="huntInvertBtn" class="icon-btn hunt-toggle-btn" title="Invert selection">INV</button>
+                <button id="huntDimBtn" class="icon-btn hunt-toggle-btn" title="Dim non-matching layers">DIM</button>
+            </div>
+
+            <!-- Search within selected -->
+            <div class="hunt-option-row">
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="huntWithinSelected">
+                    <span>Within Selected</span>
+                </label>
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="huntProjectWide">
+                    <span>Project-wide</span>
+                </label>
+            </div>
+
+            <!-- Dimensions section (collapsible) -->
+            <div data-section-id="huntDims">
+            <div class="section-header hunt-sub-header" data-body-id="huntDimsBody">
+                <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+                </svg>
+                <span class="section-title">Dimensions</span>
+            </div>
+            <div class="section-body" id="huntDimsBody">
+                <div class="hunt-dim-group">
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimName" checked>
+                            <span>Names</span>
+                        </label>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimLabel">
+                            <span>Label</span>
+                        </label>
+                        <select id="huntLabelSelect" class="hunt-label-select" title="Label colour" disabled>
+                            <option value="">Any</option>
+                            <option value="1">Red</option>
+                            <option value="2">Yellow</option>
+                            <option value="3">Lime</option>
+                            <option value="4">Cyan</option>
+                            <option value="5">Blue</option>
+                            <option value="6">Magenta</option>
+                            <option value="7">White</option>
+                            <option value="8">Black</option>
+                        </select>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimParent">
+                            <span>Parent</span>
+                        </label>
+                        <input type="text" id="huntParentInput" class="hunt-sub-input hunt-pick-input" placeholder="layer name" disabled title="Type a layer name, or use pick-click">
+                        <button id="hlmPickParentBtn" class="hunt-pickclick-btn" disabled title="Click to arm pick-click — then click a layer in the AE timeline">
+                            <!-- PickClick spiral icon (inline, scaled) -->
+                            <svg class="hunt-pickclick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151.12 177.31" aria-hidden="true" focusable="false">
+                                <polyline points="75.83 52.21 58.82 40.58 40.8 66.93 73.58 89.35 106.47 41.26 51.86 3.91 3.91 74.02 81.47 127.51 134.38 49.59" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                                <path d="M147.03,130.59l-6.89,35.24c-.99,5.08-5.92,8.39-11,7.4l-35.24-6.89c-3.57-.7-6.41-3.39-7.29-6.92l-22.57-90.02c-.65-2.59,2.3-4.57,4.45-2.99l74.88,54.83c2.93,2.15,4.36,5.8,3.66,9.36Z" fill="var(--bg-base)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimChildren">
+                            <span>Children</span>
+                        </label>
+                        <input type="text" id="huntChildrenInput" class="hunt-sub-input hunt-pick-input" placeholder="layer name" disabled title="Type a layer name, or use pick-click">
+                        <button id="hlmPickChildrenBtn" class="hunt-pickclick-btn" disabled title="Click to arm pick-click — then click a layer in the AE timeline">
+                            <svg class="hunt-pickclick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151.12 177.31" aria-hidden="true" focusable="false">
+                                <polyline points="75.83 52.21 58.82 40.58 40.8 66.93 73.58 89.35 106.47 41.26 51.86 3.91 3.91 74.02 81.47 127.51 134.38 49.59" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                                <path d="M147.03,130.59l-6.89,35.24c-.99,5.08-5.92,8.39-11,7.4l-35.24-6.89c-3.57-.7-6.41-3.39-7.29-6.92l-22.57-90.02c-.65-2.59,2.3-4.57,4.45-2.99l74.88,54.83c2.93,2.15,4.36,5.8,3.66,9.36Z" fill="var(--bg-base)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimTrackMatte">
+                            <span>Track Matte</span>
+                        </label>
+                        <input type="text" id="huntMatteInput" class="hunt-sub-input hunt-pick-input" placeholder="layer name" disabled title="Type a layer name, or use pick-click">
+                        <button id="hlmPickMatteBtn" class="hunt-pickclick-btn" disabled title="Click to arm pick-click — then click a layer in the AE timeline">
+                            <svg class="hunt-pickclick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151.12 177.31" aria-hidden="true" focusable="false">
+                                <polyline points="75.83 52.21 58.82 40.58 40.8 66.93 73.58 89.35 106.47 41.26 51.86 3.91 3.91 74.02 81.47 127.51 134.38 49.59" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                                <path d="M147.03,130.59l-6.89,35.24c-.99,5.08-5.92,8.39-11,7.4l-35.24-6.89c-3.57-.7-6.41-3.39-7.29-6.92l-22.57-90.02c-.65-2.59,2.3-4.57,4.45-2.99l74.88,54.83c2.93,2.15,4.36,5.8,3.66,9.36Z" fill="var(--bg-base)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimEffectRef">
+                            <span>Effect refs</span>
+                        </label>
+                    </div>
+                    <div class="hunt-dim-item">
+                        <label class="hunt-check-label">
+                            <input type="checkbox" id="huntDimComment">
+                            <span>Comments</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Exclude row -->
+            <div class="hunt-option-row">
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="huntExcludeEnabled">
+                    <span>Exclude</span>
+                </label>
+                <input type="text" id="huntExcludeInput" class="hunt-exclude-input" placeholder="Exclude chars / [null] [camera]\u2026" style="display:none" disabled>
+            </div>
+
+            <!-- Pattern detection section (collapsible) -->
+            <div data-section-id="huntPatterns">
+            <div class="section-header hunt-sub-header" data-body-id="huntPatternsBody">
+                <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+                </svg>
+                <span class="section-title">Patterns</span>
+                <div class="hunt-pattern-controls">
+                    <button id="huntPatternMinus" class="hunt-ctrl-btn" title="Decrease min layers">-</button>
+                    <span id="huntPatternCount">2</span>
+                    <button id="huntPatternPlus" class="hunt-ctrl-btn" title="Increase min layers">+</button>
+                </div>
+            </div>
+            <div class="section-body" id="huntPatternsBody">
+                <div id="huntPatternChips"></div>
+            </div>
+            </div>
+
+        </div>
+        </div>
+
+    </div><!-- /tab-hunt -->
+
+    <!-- ── RENAME TAB ──────────────────────────── -->
+    <div class="tab-panel" id="tab-rename">
+
+        <div data-section-id="rename">
+        <div class="section-header" data-body-id="renameBody">
+            <svg class="section-star" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5.5 .5 6.57 4.43 10.5 5.5 6.57 6.57 5.5 10.5 4.43 6.57 .5 5.5 4.43 4.43 5.5 .5"/>
+            </svg>
+            <span class="section-title">RENAME</span>
+        </div>
+        <div class="section-body" id="renameBody">
+
+            <!-- Scope selector -->
+            <div class="rename-scope-row">
+                <span class="rename-scope-label">SCOPE:</span>
+                <select id="renameScopeSelect" class="rename-scope-select">
+                    <option value="layers">Selected Layers in Comps</option>
+                    <option value="project">Project Items (Comps &amp; Folders)</option>
+                    <option value="both">Project Items + Contents</option>
+                </select>
+            </div>
+
+            <!-- Mode selectors -->
+            <div class="rename-modes">
+                <button id="renameModeSearch" class="rename-mode-btn rename-mode-active" title="Search and replace text in layer names">SRCH</button>
+                <button id="renameModePrefix" class="rename-mode-btn" title="Add text before layer name">PFX</button>
+                <button id="renameModeSuffix" class="rename-mode-btn" title="Add text after layer name">SFX</button>
+            </div>
+
+            <!-- Fire row -->
+            <div class="row" id="renameRow">
+                <button id="renameFireBtn" class="icon-btn rename-fire-btn" title="Apply rename">
+                    <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <polyline points=".5 6.26 4.97 1.78 1.84 10.5 11.84 .5 9.24 9.76 13.71 5.28"/>
+                    </svg>
+                </button>
+                <input type="text" id="renameInput1" placeholder="Search\u2026" title="Text to search for">
+                <input type="text" id="renameInput2" placeholder="Replace\u2026" title="Replace with">
+            </div>
+
+            <!-- Options row -->
+            <div class="rename-options-row">
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="renameCaseSensitive">
+                    <span>Case sensitive</span>
+                </label>
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="renamePreserveNumbers">
+                    <span>Preserve numbers</span>
+                </label>
+                <label class="hunt-check-label">
+                    <input type="checkbox" id="renameExcludeEnabled">
+                    <span>Exclude</span>
+                </label>
+            </div>
+
+            <!-- Exclude field (shown when enabled) -->
+            <div id="renameExcludeRow" class="row" style="display:none">
+                <input type="text" id="renameExcludeInput" class="hunt-exclude-input" placeholder="Skip these characters\u2026">
+            </div>
+
+        </div>
+        </div>
+
+    </div><!-- /tab-rename -->
+
+    </div><!-- /tab-content -->
     <!-- #endregion
     ───────────────
     ─────────────────────────────────────────────── -->
@@ -274,7 +567,6 @@
     <div class="row hp-sys-row">
         <button id="reloadBtn" class="sys-btn">
             <svg viewBox="0 0 14.21 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <!-- icons-zigbolt-segmented — reload signal -->
                 <line x1="2.21" y1="10.5" x2="12.21" y2=".5"/>
                 <line x1=".5" y1="6.26" x2="4.97" y2="1.78"/>
                 <line x1="9.24" y1="9.76" x2="13.71" y2="5.28"/>
@@ -286,20 +578,46 @@
     ───────────────
     ─────────────────────────────────────────────── -->
 
-</div>
+</div><!-- /hp-frame -->
 <!-- #endregion
 ───────────────
-─────────────────────────────────────────────────── -->
+────────────────────────────────────────────────── -->
 
 <!-- Bank context dropdown (shared, shown on right-click of sel/cap buttons) -->
 <div id="bankContextMenu" class="bank-ctx-menu" style="display:none">
-    <div id="bankCtxClear" class="bank-ctx-item">Clear</div>
-    <div id="bankCtxColours" class="bank-ctx-item">Colours</div>
+    <div id="bankCtxRename"   class="bank-ctx-item">Rename</div>
+    <div id="bankCtxColours" class="bank-ctx-item">Colour</div>
+    <div id="bankCtxCapture" class="bank-ctx-item">Capture</div>
+    <div id="bankCtxIcon"    class="bank-ctx-item">Icon</div>
+    <div id="bankCtxClear"   class="bank-ctx-item bank-ctx-item--danger">
+        <svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" style="width:7px;height:7px;margin-right:4px;vertical-align:middle"><line x1="10.5" y1=".5" x2=".5" y2="10.5"/><line x1=".5" y1=".5" x2="10.5" y2="10.5"/></svg>Clear
+    </div>
 </div>
+
+<!-- ────────────────────────────────────────────── -->
+<!-- #region 🎯🎯🎯 PICKCLICK VEIL
+─────────────────────────────────────────────────── -->
+<!-- Full-panel veil shown when PickClick is armed. Click veil to cancel. -->
+<div id="hlmPickClickVeil" class="hlm-pickclick-veil" role="button" aria-label="PickClick armed — click a layer in the AE timeline, or click here to cancel.">
+    <div class="hlm-pickclick-veil-content">
+        <!-- PickClick spiral+cursor icon (cyan, matches Expressor) -->
+        <svg class="hlm-pickclick-veil-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151.12 177.31" aria-hidden="true" focusable="false">
+            <polyline points="75.83 52.21 58.82 40.58 40.8 66.93 73.58 89.35 106.47 41.26 51.86 3.91 3.91 74.02 81.47 127.51 134.38 49.59" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+            <path d="M147.03,130.59l-6.89,35.24c-.99,5.08-5.92,8.39-11,7.4l-35.24-6.89c-3.57-.7-6.41-3.39-7.29-6.92l-22.57-90.02c-.65-2.59,2.3-4.57,4.45-2.99l74.88,54.83c2.93,2.15,4.36,5.8,3.66,9.36Z" fill="var(--bg-base)" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.82"/>
+        </svg>
+        <div class="hlm-pickclick-veil-text">PICK CLICK ARMED</div>
+        <div class="hlm-pickclick-veil-sub">Click a layer in the AE timeline</div>
+        <div class="hlm-pickclick-veil-cancel">click here to cancel</div>
+    </div>
+</div>
+<!-- #endregion
+───────────────
+────────────────────────────────────────────────── -->
 
 <script src="js/CSInterface.js"></script>
 <script src="js/colorpicker.js"></script>
 <script src="js/hlm-dragdrop.js"></script>
 <script src="js/main.js"></script>
+<script src="js/main_PICKCLICK.js"></script>
 </body>
 </html>

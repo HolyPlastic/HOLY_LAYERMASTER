@@ -28,3 +28,15 @@ Click the star icon in any section header to toggle collapse. Toggles `section-c
 
 ## Dev Log
 - 1: Initial implementation. Breakpoint set at 150px.
+- 2: Extended `ResizeObserver` to also apply `body.bank-wide` class at ≥260px — triggers larger bank cell buttons (sel: 38×38px, cap: 34×13px) and shows `.bank-cell-name` label inputs beneath each cell. `NARROW_BP` constant renamed from `BREAKPOINT` for clarity alongside new `WIDE_BP = 260`.
+
+---
+
+# Hunt Tab UI Polish
+
+**Files:** `css/style.css` → Hunt tab selectors
+
+Adjusted sizing for Hunt tab checkboxes and inputs for better readability.
+
+## Dev Log
+- 1: Hunt tab checkbox label font-size increased from 7.5px to 9px, gap from 3px to 5px, checkbox size from 8px to 10px. Added gap: 8px to hunt-option-row, gap: 4px to hunt-dim-item. Bumped hunt-sub-input and hunt-label-select font-size from 7px to 8.5px.

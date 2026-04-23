@@ -1,8 +1,6 @@
 # HolyLayerMaster — Start document
 
-> ⚠️ **Cross-plugin work?** If your task involves the `holyAPI_*` bridge surface or anything that interfaces with Holy Agent — read `../../HOLY REPOS COLLATED/AGENTS.md` **before** this file. It contains cross-cutting ExtendScript traps, the ecosystem architecture, and the master roadmap. For self-contained LayerMaster work (UI, layer state, panels), this file is sufficient.
->
-> **Note on `com.holy.agent.layerCommand`:** The original plan called for a CSEvent listener stub in `js/main.js`. This design was superseded — Holy Agent integration uses direct `cs.evalScript` against `holyAPI_hlm_*` functions in `jsx/hostscript.jsx` (implemented at lines 728–810). No CSEvent listener was built and none is needed. See Holy Agent `Docs/ARCHITECTURE.md` Entry 3.
+> ⚠️ **Cross-plugin work?** If your task involves the `holyAPI_*` bridge surface, the `com.holy.agent.layerCommand` event listener, or anything that interfaces with Holy Agent — read `../../HOLY REPOS COLLATED/AGENTS.md` **before** this file. It contains cross-cutting ExtendScript traps, the ecosystem architecture, and the master roadmap. For self-contained LayerMaster work (UI, layer state, panels), this file is sufficient.
 
 ## Stack
 - **CEP Panel** for Adobe After Effects (Chromium Embedded Framework)

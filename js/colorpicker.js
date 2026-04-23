@@ -6,14 +6,15 @@
  *
  * ── USAGE ──────────────────────────────────────────────────────────────────
  *
- *   HLMColorPicker.init({
- *     fetchSwatches : function(callback) {
- *                       // async — call callback([{ hex: '#ff0000', name: 'Red' }, ...])
- *                       callback([]);
- *                     },
- *     onApply       : function(targetId, hex) { ... },  // hex = '#RRGGBB'
- *     onReset       : function(targetId)      { ... },
- *   });
+     *   HLMColorPicker.init({
+     *     fetchSwatches : function(callback) {
+     *                       // async — call callback([{ hex: '#ff0000', name: 'Red' }, ...])
+     *                       callback([]);
+     *                     },
+     *     onApply       : function(targetId, hex) { ... },  // hex = '#RRGGBB'
+     *     onReset       : function(targetId)      { ... },
+     *     onPreview     : function(targetId, hex) { ... }, // hex = '#RRGGBB', called on every change
+     *   });
  *
  *   // Open picker anchored to a button; targetId is any string you choose
  *   HLMColorPicker.open(targetId, anchorElement, currentHex);
@@ -48,9 +49,11 @@
     var _targetId      = null;
     var _onApply       = function () {};
     var _onReset       = function () {};
+    var _onPreview     = function () {};
     var _fetchSwatches = function (cb) { cb([]); };
     var _built         = false;
     var _swatchCache   = null;   // cache swatch data after first fetch
+    var _labelOnly     = false;  // when true: hide free-hex input, swatches only
 
     /* ── build DOM ───────────────────────────────────────────────────── */
     function _build() {
@@ -70,7 +73,7 @@
             '</div>',
 
             /* Row 2 — native picker trigger + hex input */
-            '<div class="cp-input-row">',
+            '<div id="cpInputRow" class="cp-input-row">',
             '  <input type="color" id="cpNativePicker"',
             '    style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;border:none;padding:0;">',
             '  <button id="cpNativeBtn" class="cp-native-btn" title="Open system color picker">',
@@ -112,6 +115,14 @@
             if (e.key === 'Enter') document.getElementById('cpApplyBtn').click();
         });
 
+        /* Hex input real-time preview */
+        document.getElementById('cpHexInput').addEventListener('input', function (e) {
+            var val = e.target.value.trim().replace(/^#/, '');
+            if (/^[0-9a-fA-F]{6}$/.test(val)) {
+                _preview('#' + val.toUpperCase());
+            }
+        });
+
         /* Reset */
         document.getElementById('cpResetBtn').addEventListener('click', function () {
             _reset();
@@ -127,16 +138,19 @@
             native.click();
         });
         native.addEventListener('input', function (e) {
-            document.getElementById('cpHexInput').value =
-                e.target.value.replace('#', '').toUpperCase();
+            var hexVal = e.target.value.replace('#', '').toUpperCase();
+            document.getElementById('cpHexInput').value = hexVal;
+            _preview('#' + hexVal);
         });
 
-        /* Close when clicking outside */
+        /* Close when clicking outside — but ignore bank context menu clicks
+           (their click event bubbles here and would immediately close a just-opened picker) */
         document.addEventListener('click', function (e) {
             var picker = document.getElementById(PICKER_ID);
             if (picker &&
                 picker.style.display !== 'none' &&
-                !e.target.closest('#' + PICKER_ID)) {
+                !e.target.closest('#' + PICKER_ID) &&
+                !e.target.closest('#bankContextMenu')) {
                 _close();
             }
         });
@@ -148,6 +162,10 @@
         _close();
     }
 
+    function _preview(hex) {
+        if (_targetId && typeof _onPreview === 'function') _onPreview(_targetId, hex);
+    }
+
     function _reset() {
         if (_targetId) _onReset(_targetId);
         _close();
@@ -157,6 +175,7 @@
         var el = document.getElementById(PICKER_ID);
         if (el) el.style.display = 'none';
         _targetId = null;
+        _labelOnly = false;
     }
 
     /* ── positioning ─────────────────────────────────────────────────── */
@@ -205,13 +224,16 @@
     }
 
     /* ── public open ─────────────────────────────────────────────────── */
-    function _open(targetId, anchorEl, currentHex) {
+    function _open(targetId, anchorEl, currentHex, opts) {
         _build();
-        _targetId = targetId;
+        _targetId  = targetId;
+        _labelOnly = !!(opts && opts.labelOnly);
 
         var el       = document.getElementById(PICKER_ID);
         var hexInput = document.getElementById('cpHexInput');
+        var inputRow = document.getElementById('cpInputRow');
         hexInput.value = currentHex ? currentHex.replace(/^#/, '') : '';
+        if (inputRow) inputRow.style.display = _labelOnly ? 'none' : '';
         el.style.display = 'block';
         _position(el, anchorEl);
 
@@ -229,12 +251,14 @@
          * @param {Function} options.fetchSwatches  - async, receives callback(swatchArray)
          * @param {Function} options.onApply        - (targetId, hexString) called on OK
          * @param {Function} options.onReset        - (targetId) called on Reset
+         * @param {Function} options.onPreview      - (targetId, hexString) called on each change
          */
         init: function (options) {
             options = options || {};
             if (typeof options.fetchSwatches === 'function') _fetchSwatches = options.fetchSwatches;
             if (typeof options.onApply       === 'function') _onApply       = options.onApply;
-            if (typeof options.onReset       === 'function') _onReset       = options.onReset;
+            if (typeof options.onReset        === 'function') _onReset        = options.onReset;
+            if (typeof options.onPreview      === 'function') _onPreview      = options.onPreview;
             _swatchCache = null;   /* clear cache so fresh data is fetched */
             _build();
         },
